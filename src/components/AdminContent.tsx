@@ -11,6 +11,7 @@ import SortSelect from './SortSelect';
 
 interface AdminContentProps {
   onShowToast?: (msg: string) => void;
+  onTabChange?: (tab: string) => void;
 }
 
 const tabs = ['공지사항 관리', '자료실 관리', '데이터목록 관리', '팝업 · 배너 관리', '연관플랫폼 관리'];
@@ -70,7 +71,7 @@ function SelectButton({ label, value, width = 'w-[100px]', height = 'h-[48px]', 
   );
 }
 
-export default function AdminContent({ onShowToast }: AdminContentProps) {
+export default function AdminContent({ onShowToast, onTabChange }: AdminContentProps) {
   const [activeTab, setActiveTab] = useState('공지사항 관리');
   const [activePage, setActivePage] = useState(1);
   const [view, setView] = useState<'list' | 'create' | 'edit'>('list');
@@ -140,7 +141,7 @@ export default function AdminContent({ onShowToast }: AdminContentProps) {
         {tabs.map(tab => (
           <button
             key={tab}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => { setActiveTab(tab); onTabChange?.(tab); }}
             className={`h-[44px] px-[24px] text-[16px] -mb-px border-b-2 transition-colors ${
               activeTab === tab
                 ? 'border-[#0B50D0] text-[#0B50D0] font-bold'

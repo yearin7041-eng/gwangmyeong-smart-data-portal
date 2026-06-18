@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import {
-  LayoutDashboard, FileText, UserCircle, ExternalLink, ChevronRight,
+  UserCircle, ExternalLink, ChevronRight,
 } from 'lucide-react';
 import Footer from './Footer';
 import AdminContent from './AdminContent';
@@ -34,9 +34,9 @@ const tasks = [
 ];
 
 const sidebarMenu = [
-  { icon: LayoutDashboard, label: '대시보드' },
-  { icon: FileText, label: '콘텐츠 관리' },
-  { icon: UserCircle, label: '관리자 계정' },
+  { icon: '/icons_admin/ic_admin_dashboard.svg', iconOn: '/icons_admin/ic_admin_dashboard_on.svg', label: '대시보드' },
+  { icon: '/icons_admin/ic_admin_content.svg', iconOn: '/icons_admin/ic_admin_content_on.svg', label: '콘텐츠 관리' },
+  { icon: '/icons_admin/ic_admin_account.svg', iconOn: '/icons_admin/ic_admin_account_on.svg', label: '관리자 계정' },
 ];
 
 const statusBadge = (status: string) => {
@@ -51,6 +51,7 @@ const statusBadge = (status: string) => {
 export default function Admin({ onShowToast, onNavigate }: AdminProps) {
   const [activeMenu, setActiveMenu] = useState('대시보드');
   const [activeTab, setActiveTab] = useState('공지사항');
+  const [contentTab, setContentTab] = useState('공지사항 관리');
   const tabs = ['공지사항', '자료실', '데이터목록'];
 
   return (
@@ -84,7 +85,7 @@ export default function Admin({ onShowToast, onNavigate }: AdminProps) {
         {/* Sidebar */}
         <aside className="w-[260px] shrink-0 bg-[#ECF2FE] flex flex-col justify-between px-[16px] py-[16px]">
           <nav className="flex flex-col gap-[20px]">
-            {sidebarMenu.map(({ icon: Icon, label }) => {
+            {sidebarMenu.map(({ icon, iconOn, label }) => {
               const active = activeMenu === label;
               return (
                 <button
@@ -96,7 +97,7 @@ export default function Admin({ onShowToast, onNavigate }: AdminProps) {
                       : 'text-[#464C53] hover:bg-white'
                   }`}
                 >
-                  <Icon size={24} className={active ? 'text-white' : 'text-[#464C53]'} />
+                  <img src={active ? iconOn : icon} alt="" width={24} height={24} className="w-6 h-6 shrink-0" />
                   <span className={`text-[18px] ${active ? 'font-semibold' : 'font-normal'}`}>{label}</span>
                 </button>
               );
@@ -135,14 +136,14 @@ export default function Admin({ onShowToast, onNavigate }: AdminProps) {
             {activeMenu === '콘텐츠 관리' && (
               <>
                 <ChevronRight size={16} className="text-[#B1B8BE]" />
-                <span>공지사항 관리</span>
+                <span>{contentTab}</span>
               </>
             )}
           </div>
 
           {/* Main */}
           {activeMenu === '콘텐츠 관리' ? (
-          <AdminContent onShowToast={onShowToast} />
+          <AdminContent onShowToast={onShowToast} onTabChange={setContentTab} />
           ) : activeMenu === '관리자 계정' ? (
           <AdminAccount onShowToast={onShowToast} />
           ) : (

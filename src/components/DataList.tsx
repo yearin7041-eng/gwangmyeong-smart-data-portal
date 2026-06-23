@@ -297,10 +297,9 @@ export default function DataList({ onShowToast, onNavigate }: DataListProps) {
             </thead>
             <tbody>
               {dummyData.map((item) => (
-                <tr 
-                  key={item.id} 
-                  className="cursor-pointer hover:bg-[#F5F8FC]" 
-                  onClick={() => onNavigate ? onNavigate('dataDetail') : onShowToast("상세 정보 페이지로 이동합니다.")}
+                <tr
+                  key={item.id}
+                  className="hover:bg-[#F5F8FC]"
                 >
                   <td style={{ textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
                     <Checkbox />
@@ -359,7 +358,7 @@ export default function DataList({ onShowToast, onNavigate }: DataListProps) {
           <div 
             className="gp-card gp-card--hover flex flex-col h-full cursor-pointer" 
             style={{ boxShadow: 'none' }}
-            onClick={() => onNavigate ? onNavigate('dataDetail') : onShowToast("상세 정보 페이지로 이동합니다.")}
+            onClick={() => onShowToast("준비 중인 기능입니다.")}
           >
             <div className="flex gap-4 mb-[32px]">
               <img src="/icons/ic_leaf_2.svg" alt="탄소" className="w-[80px] h-[80px] shrink-0" />
@@ -402,7 +401,7 @@ export default function DataList({ onShowToast, onNavigate }: DataListProps) {
           <div 
             className="gp-card gp-card--hover flex flex-col h-full cursor-pointer" 
             style={{ boxShadow: 'none' }}
-            onClick={() => onNavigate ? onNavigate('dataDetail') : onShowToast("상세 정보 페이지로 이동합니다.")}
+            onClick={() => onShowToast("준비 중인 기능입니다.")}
           >
             <div className="flex gap-4 mb-[32px]">
               <img src="/icons/ic_bus_2.svg" alt="교통" className="w-[80px] h-[80px] shrink-0" />
@@ -444,7 +443,7 @@ export default function DataList({ onShowToast, onNavigate }: DataListProps) {
           <div 
             className="gp-card gp-card--hover flex flex-col h-full cursor-pointer" 
             style={{ boxShadow: 'none' }}
-            onClick={() => onNavigate ? onNavigate('dataDetail') : onShowToast("상세 정보 페이지로 이동합니다.")}
+            onClick={() => onShowToast("준비 중인 기능입니다.")}
           >
             <div className="flex gap-4 mb-[32px]">
               <img src="/icons/ic_building_2.svg" alt="에너지" className="w-[80px] h-[80px] shrink-0" />

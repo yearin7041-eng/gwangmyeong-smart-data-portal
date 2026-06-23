@@ -147,7 +147,7 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
                 : 'text-[#0F0F10] hover:text-[var(--gp-primary)]'
             }`}
           >
-            데이터목록
+            데이터 목록
           </a>
           <a 
             href="#personal-carbon" 
@@ -329,7 +329,7 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
                   currentPage === 'dataList' ? 'text-[var(--gp-primary)] bg-[var(--gp-primary-soft)]' : 'text-[#0F0F10]'
                 }`}
               >
-                <span>데이터목록</span>
+                <span>데이터 목록</span>
                 <ArrowRight size={14} />
               </a>
               <a 

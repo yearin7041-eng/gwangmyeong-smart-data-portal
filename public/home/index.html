@@ -884,19 +884,25 @@
         }
       });
 
-      /* Hover any moving marker (pin/bus/배민/obj) → pause the whole map animation.
+      /* Hover any moving marker (pin/bus/배민/obj) → ease-out the whole map animation
+         to a stop (and ease back in on leave) by ramping Lottie playback speed.
          Per-frame bounding-box check: robust for tiny markers, transparent gaps,
          and even a marker that slides under a stationary cursor. */
       (function () {
         var pins = [];
-        var mx = -1, my = -1, paused = false, pad = 6;
+        var mx = -1, my = -1, pad = 6;
+        var DURATION = 900;           // 감속/가속에 걸리는 시간(ms)
+        var lastOver = false;
+        var fromSpeed = 1, toSpeed = 1, startT = -1;
+        var curSpeed = 1, lastSet = 1;
+        function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
         document.addEventListener('mousemove', function (e) { mx = e.clientX; my = e.clientY; }, { passive: true });
         document.addEventListener('mouseleave', function () { mx = -1; my = -1; });
         window.lottieAnim.addEventListener('DOMLoaded', function () {
           pins = Array.prototype.slice.call(document.querySelectorAll('#lottie-bg .lt-pinhover'));
           window.requestAnimationFrame(loop);
         });
-        function loop() {
+        function loop(now) {
           var over = false;
           if (mx >= 0) {
             for (var i = 0; i < pins.length; i++) {
@@ -906,8 +912,21 @@
                   my >= r.top - pad && my <= r.bottom + pad) { over = true; break; }
             }
           }
-          if (over && !paused) { window.lottieAnim.pause(); paused = true; }
-          else if (!over && paused) { window.lottieAnim.play(); paused = false; }
+          // hover 상태가 바뀌는 순간 새 전환(감속/가속) 시작
+          if (over !== lastOver) {
+            fromSpeed = curSpeed;
+            toSpeed = over ? 0 : 1;
+            startT = now;
+            lastOver = over;
+          }
+          if (startT >= 0) {
+            var p = Math.min(1, (now - startT) / DURATION);
+            curSpeed = fromSpeed + (toSpeed - fromSpeed) * easeOutCubic(p);  // ease-out 감속
+            if (Math.abs(curSpeed - lastSet) > 0.002) {
+              window.lottieAnim.setSpeed(curSpeed < 0.005 ? 0 : curSpeed);
+              lastSet = curSpeed;
+            }
+          }
           window.requestAnimationFrame(loop);
         }
       })();
@@ -941,7 +960,7 @@
       <div class="mile-tooltip__hint">클릭하여 자세히보기 <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
     </div>
 
-    <script src="./js/buildingInteraction.js?v=55"></script>
+    <script src="./js/buildingInteraction.js?v=57"></script>
 
     <!-- React 앱(부모)으로 네비게이션 전달: iframe 내부 메뉴 클릭 → 부모 라우팅 -->
     <script>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Search, ChevronDown, Calendar, X } from 'lucide-react';
 import DateRangePicker from './DateRangePicker';
 import Checkbox from './Checkbox';
+import FilterSelect from './FilterSelect';
 import DatePicker from './DatePicker';
 import SortSelect from './SortSelect';
 
@@ -45,25 +46,24 @@ const rows: Row[] = [
 const statusBadge = (status: string) =>
   status === '공개' ? 'bg-[#EAF6EC] text-[#3FA654]' : 'bg-[#F4F5F6] text-[#58616A]';
 
-function SelectButton({ label, value, width = 'w-[100px]', height = 'h-[48px]', radius = 'rounded-[6px]', onClick }: { label?: string; value: string; width?: string; height?: string; radius?: string; onClick?: () => void }) {
-  return (
-    <div className="flex items-center gap-[8px]">
-      {label && <span className="text-[14px] font-medium text-[#464C53] whitespace-nowrap">{label}</span>}
-      <button
-        onClick={onClick}
-        className={`${height} ${width} px-[16px] ${radius} border border-[#CDD1D5] bg-white flex items-center justify-between text-[14px] text-[#131416] hover:border-[var(--gp-primary)] transition-colors`}
-      >
-        <span className="whitespace-nowrap">{value}</span>
-        <ChevronDown size={16} className="text-[#7C8896] shrink-0" />
-      </button>
-    </div>
-  );
-}
-
 export default function AdminDataList({ onShowToast, registerOpen, onCloseRegister }: AdminDataListProps) {
   const [activePage, setActivePage] = useState(1);
   const [editTarget, setEditTarget] = useState<Row | null>(null);
+  const [search, setSearch] = useState('');
+  const [mileF, setMileF] = useState('전체');
+  const [typeF, setTypeF] = useState('전체');
+  const [statusF, setStatusF] = useState('전체');
   const closeModal = () => { setEditTarget(null); onCloseRegister?.(); };
+
+  const mileMap: Record<string, string> = { '에너지 마일': 'Energy Mile', '모빌리티 마일': 'Mobility Mile', '세이프티 마일': 'Safety Mile', '데이터 마일': 'Data Mile' };
+  const q = search.trim();
+  const filtered = rows.filter(r =>
+    (mileF === '전체' || r.mile === mileMap[mileF]) &&
+    (typeF === '전체' || r.type === typeF) &&
+    (statusF === '전체' || r.status === statusF) &&
+    (q === '' || r.name.includes(q) || r.provider.includes(q))
+  );
+  const reset = () => { setSearch(''); setMileF('전체'); setTypeF('전체'); setStatusF('전체'); };
 
   return (
     <>
@@ -82,13 +82,13 @@ export default function AdminDataList({ onShowToast, registerOpen, onCloseRegist
       {/* Filter row */}
       <div className="flex items-center gap-[16px] flex-wrap">
         <div className="gp-searchfield" style={{ flex: '0 0 350px', width: '350px' }}>
-          <input type="text" placeholder="데이터명, 제공기관 검색" />
+          <input type="text" placeholder="데이터명, 제공기관 검색" value={search} onChange={e => setSearch(e.target.value)} />
           <Search className="gp-ico" size={20} />
         </div>
         <div className="flex items-center gap-[24px] ml-auto flex-wrap">
-          <SelectButton label="마일 구분" value="전체" />
-          <SelectButton label="데이터 유형" value="전체" />
-          <SelectButton label="상태" value="전체" />
+          <FilterSelect label="마일 구분" width="w-[140px]" options={['전체', '에너지 마일', '모빌리티 마일', '세이프티 마일', '데이터 마일']} value={mileF} onChange={setMileF} />
+          <FilterSelect label="데이터 유형" width="w-[130px]" options={['전체', '센서', '공간정보', '행정데이터', '통계']} value={typeF} onChange={setTypeF} />
+          <FilterSelect label="상태" width="w-[110px]" options={['전체', '공개', '비공개']} value={statusF} onChange={setStatusF} />
           <DateRangePicker label="등록기간" />
           <div className="flex items-center gap-[12px] ml-[24px]">
             <button
@@ -98,7 +98,7 @@ export default function AdminDataList({ onShowToast, registerOpen, onCloseRegist
               검색
             </button>
             <button
-              onClick={() => onShowToast?.('검색 조건이 초기화되었습니다.')}
+              onClick={reset}
               className="h-[48px] px-[20px] rounded-[8px] border border-[#CDD1D5] bg-white text-[16px] font-medium text-[#464C53] hover:border-[var(--gp-primary)] hover:text-[var(--gp-primary)] transition-colors"
             >
               초기화
@@ -110,7 +110,7 @@ export default function AdminDataList({ onShowToast, registerOpen, onCloseRegist
       <div className="flex flex-col gap-[16px] mt-[8px]">
         {/* Toolbar */}
         <div className="flex items-center justify-between">
-          <span className="text-[16px] text-[#1E2124]">총 <b className="font-semibold">128</b>건</span>
+          <span className="text-[16px] text-[#1E2124]">총 <b className="font-semibold">{filtered.length}</b>건</span>
           <div className="flex items-center gap-[12px]">
             <button
               onClick={() => onShowToast?.('선택한 항목을 삭제합니다.')}
@@ -136,7 +136,7 @@ export default function AdminDataList({ onShowToast, registerOpen, onCloseRegist
             <span className="w-[110px] px-[8px] text-center">최근 갱신일</span>
             <span className="w-[150px] px-[8px] text-center">관리</span>
           </div>
-          {rows.map((row, idx) => (
+          {filtered.map((row, idx) => (
             <div key={idx} className="flex items-center h-[48px] text-[14px] text-[#1E2124] border-t border-[#E6E8EA] hover:bg-[#F9FAFB]">
               <span className="w-[52px] flex justify-center"><Checkbox /></span>
               <span className="w-[60px] px-[8px] text-center">{row.no}</span>

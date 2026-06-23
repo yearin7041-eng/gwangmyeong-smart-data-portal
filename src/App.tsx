@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from './components/Header';
 import IntroSection from './components/IntroSection';
 import SolutionMap from './components/SolutionMap';
@@ -24,7 +24,7 @@ import { Sparkles, MessageCircle, HelpCircle, FileDown, CheckCircle, ArrowRight 
 export default function App() {
   const [activeMileTab, setActiveMileTab] = useState<'energy' | 'mobility' | 'safety' | 'data'>('energy');
   const [activeCityTab, setActiveCityTab] = useState<string>('population');
-  const [currentPage, setCurrentPage] = useState<'intro' | 'archive' | 'map' | 'cityMap' | 'dataList' | 'dataDetail' | 'personalCarbon' | 'relatedPlatforms' | 'notice' | 'noticeDetail' | 'admin' | 'login'>('intro');
+  const [currentPage, setCurrentPage] = useState<'home' | 'intro' | 'archive' | 'map' | 'cityMap' | 'dataList' | 'dataDetail' | 'personalCarbon' | 'relatedPlatforms' | 'notice' | 'noticeDetail' | 'admin' | 'login'>('home');
   const [activeSolutionId, setActiveSolutionId] = useState<string>("01"); // default active: "01" (신재생 에너지 자원 발전소)
   const [mileFilter, setMileFilter] = useState<string>("all");
   const [activeToast, setActiveToast] = useState<string | null>(null);
@@ -35,6 +35,21 @@ export default function App() {
   const triggerToast = (_msg: string) => {
     // no-op
   };
+
+  // 메인(home) iframe 내부 네비 클릭 → 부모 라우팅 수신
+  useEffect(() => {
+    const allowed = ['home', 'intro', 'map', 'cityMap', 'dataList', 'dataDetail', 'personalCarbon', 'relatedPlatforms', 'notice', 'noticeDetail', 'admin', 'login', 'archive'];
+    const onMessage = (e: MessageEvent) => {
+      if (e.origin !== window.location.origin) return;
+      const data: any = e.data;
+      if (data && data.type === 'gm-navigate' && allowed.includes(data.page)) {
+        setCurrentPage(data.page);
+        window.scrollTo({ top: 0 });
+      }
+    };
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, []);
 
   const handleSelectSolution = (sol: any) => {
     setActiveSolutionId(sol.id);
@@ -64,6 +79,16 @@ export default function App() {
 
       {currentPage === 'admin' ? (
         <Admin onShowToast={triggerToast} onNavigate={setCurrentPage} />
+      ) : currentPage === 'home' ? (
+        <>
+          <Header currentPage={currentPage} onNavigate={setCurrentPage} />
+          <iframe
+            src="/home/index.html?v=53"
+            title="광명 스마트데이터포털"
+            className="w-full border-0 block"
+            style={{ height: 'calc(100vh - 80px)' }}
+          />
+        </>
       ) : (
       <>
       {/* GNB Header */}
@@ -74,10 +99,10 @@ export default function App() {
         <div className="max-w-[1440px] mx-auto px-0">
           <div className="flex items-center gap-[8px] h-[44px] text-[16px] font-medium font-pretendard-gov text-[var(--fg-3)]">
             <a 
-              href="/" 
+              href="/"
               onClick={(e) => {
                 e.preventDefault();
-                setCurrentPage('intro');
+                setCurrentPage('home');
               }}
               className="flex items-center shrink-0"
             >

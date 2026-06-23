@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Plus, Search, ChevronDown, Calendar, Paperclip } from 'lucide-react';
 import AdminNoticeForm from './AdminNoticeForm';
 import Checkbox from './Checkbox';
+import FilterSelect from './FilterSelect';
 import AdminArchive from './AdminArchive';
 import AdminDataList from './AdminDataList';
 import AdminPopup from './AdminPopup';
@@ -56,21 +57,6 @@ const statusBadge = (status: string) => {
   }
 };
 
-function SelectButton({ label, value, width = 'w-[100px]', height = 'h-[48px]', radius = 'rounded-[6px]', onClick }: { label?: string; value: string; width?: string; height?: string; radius?: string; onClick?: () => void }) {
-  return (
-    <div className="flex items-center gap-[8px]">
-      {label && <span className="text-[14px] font-medium text-[#464C53] whitespace-nowrap">{label}</span>}
-      <button
-        onClick={onClick}
-        className={`${height} ${width} px-[16px] ${radius} border border-[#CDD1D5] bg-white flex items-center justify-between text-[14px] text-[#131416] hover:border-[var(--gp-primary)] transition-colors`}
-      >
-        <span className="whitespace-nowrap">{value}</span>
-        <ChevronDown size={16} className="text-[#7C8896] shrink-0" />
-      </button>
-    </div>
-  );
-}
-
 export default function AdminContent({ onShowToast, onTabChange }: AdminContentProps) {
   const [activeTab, setActiveTab] = useState('공지사항 관리');
   const [activePage, setActivePage] = useState(1);
@@ -80,6 +66,17 @@ export default function AdminContent({ onShowToast, onTabChange }: AdminContentP
   const [dataRegisterOpen, setDataRegisterOpen] = useState(false);
   const [archiveRegisterOpen, setArchiveRegisterOpen] = useState(false);
   const [platformRegisterOpen, setPlatformRegisterOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const [catF, setCatF] = useState('전체');
+  const [statusF, setStatusF] = useState('전체');
+
+  const q = search.trim();
+  const filtered = rows.filter(r =>
+    (catF === '전체' || r.cat === catF) &&
+    (statusF === '전체' || r.status === statusF) &&
+    (q === '' || r.title.includes(q))
+  );
+  const reset = () => { setSearch(''); setCatF('전체'); setStatusF('전체'); };
 
   const openEdit = (row: Row) => { setEditRow(row); setView('edit'); };
 
@@ -170,12 +167,12 @@ export default function AdminContent({ onShowToast, onTabChange }: AdminContentP
       {/* Filter row */}
       <div className="flex items-center gap-[16px] flex-wrap">
         <div className="gp-searchfield" style={{ flex: '0 0 350px', width: '350px' }}>
-          <input type="text" placeholder="제목, 내용, 작성자 검색" />
+          <input type="text" placeholder="제목, 내용, 작성자 검색" value={search} onChange={e => setSearch(e.target.value)} />
           <Search className="gp-ico" size={20} />
         </div>
         <div className="flex items-center gap-[24px] ml-auto flex-wrap">
-          <SelectButton label="구분" value="전체" />
-          <SelectButton label="상태" value="전체" />
+          <FilterSelect label="구분" width="w-[130px]" options={['전체', '중요', '데이터 갱신', '이용 안내', '공지', '안내', '서비스 안내']} value={catF} onChange={setCatF} />
+          <FilterSelect label="상태" width="w-[110px]" options={['전체', '게시중', '공개', '비공개']} value={statusF} onChange={setStatusF} />
           <DateRangePicker label="기간 선택" />
           <div className="flex items-center gap-[12px] ml-[24px]">
             <button
@@ -185,7 +182,7 @@ export default function AdminContent({ onShowToast, onTabChange }: AdminContentP
               검색
             </button>
             <button
-              onClick={() => onShowToast?.('검색 조건이 초기화되었습니다.')}
+              onClick={reset}
               className="h-[48px] px-[20px] rounded-[8px] border border-[#CDD1D5] bg-white text-[16px] font-medium text-[#464C53] hover:border-[var(--gp-primary)] hover:text-[var(--gp-primary)] transition-colors"
             >
               초기화
@@ -197,7 +194,7 @@ export default function AdminContent({ onShowToast, onTabChange }: AdminContentP
       <div className="flex flex-col gap-[16px] mt-[8px]">
       {/* Toolbar */}
       <div className="flex items-center justify-between">
-        <span className="text-[16px] text-[#1E2124]">총 <b className="font-semibold">128</b>건</span>
+        <span className="text-[16px] text-[#1E2124]">총 <b className="font-semibold">{filtered.length}</b>건</span>
         <div className="flex items-center gap-[12px]">
           <button
             onClick={() => onShowToast?.('선택한 항목을 삭제합니다.')}
@@ -223,7 +220,7 @@ export default function AdminContent({ onShowToast, onTabChange }: AdminContentP
           <span className="w-[110px] px-[8px] text-center">수정일</span>
           <span className="w-[150px] px-[8px] text-center">관리</span>
         </div>
-        {rows.map((row, idx) => (
+        {filtered.map((row, idx) => (
           <div key={idx} className="flex items-center h-[48px] text-[14px] text-[#1E2124] border-t border-[#E6E8EA] hover:bg-[#F9FAFB]">
             <span className="w-[52px] flex justify-center"><Checkbox /></span>
             <span className="w-[60px] px-[8px] text-center">{row.no}</span>

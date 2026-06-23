@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Search, ChevronDown, X } from 'lucide-react';
 import DateRangePicker from './DateRangePicker';
 import Checkbox from './Checkbox';
+import FilterSelect from './FilterSelect';
 import SortSelect from './SortSelect';
 
 interface AdminArchiveProps {
@@ -44,25 +45,21 @@ const rows: Row[] = [
 const statusBadge = (status: string) =>
   status === '공개' ? 'bg-[#EAF6EC] text-[#3FA654]' : 'bg-[#F4F5F6] text-[#58616A]';
 
-function SelectButton({ label, value, width = 'w-[100px]', height = 'h-[48px]', radius = 'rounded-[6px]', onClick }: { label?: string; value: string; width?: string; height?: string; radius?: string; onClick?: () => void }) {
-  return (
-    <div className="flex items-center gap-[8px]">
-      {label && <span className="text-[14px] font-medium text-[#464C53] whitespace-nowrap">{label}</span>}
-      <button
-        onClick={onClick}
-        className={`${height} ${width} px-[16px] ${radius} border border-[#CDD1D5] bg-white flex items-center justify-between text-[14px] text-[#131416] hover:border-[var(--gp-primary)] transition-colors`}
-      >
-        <span className="whitespace-nowrap">{value}</span>
-        <ChevronDown size={16} className="text-[#7C8896] shrink-0" />
-      </button>
-    </div>
-  );
-}
-
 export default function AdminArchive({ onShowToast, registerOpen, onCloseRegister }: AdminArchiveProps) {
   const [activePage, setActivePage] = useState(1);
   const [editTarget, setEditTarget] = useState<Row | null>(null);
+  const [search, setSearch] = useState('');
+  const [typeF, setTypeF] = useState('전체');
+  const [formatF, setFormatF] = useState('전체');
   const closeModal = () => { setEditTarget(null); onCloseRegister?.(); };
+
+  const q = search.trim();
+  const filtered = rows.filter(r =>
+    (typeF === '전체' || r.type === typeF) &&
+    (formatF === '전체' || r.format === formatF) &&
+    (q === '' || r.title.includes(q) || r.fileName.includes(q))
+  );
+  const reset = () => { setSearch(''); setTypeF('전체'); setFormatF('전체'); };
 
   return (
     <>
@@ -81,12 +78,12 @@ export default function AdminArchive({ onShowToast, registerOpen, onCloseRegiste
       {/* Filter row */}
       <div className="flex items-center gap-[16px] flex-wrap">
         <div className="gp-searchfield" style={{ flex: '0 0 350px', width: '350px' }}>
-          <input type="text" placeholder="자료실, 설명 검색" />
+          <input type="text" placeholder="자료실, 설명 검색" value={search} onChange={e => setSearch(e.target.value)} />
           <Search className="gp-ico" size={20} />
         </div>
         <div className="flex items-center gap-[24px] ml-auto flex-wrap">
-          <SelectButton label="자료 유형" value="전체" />
-          <SelectButton label="파일 형식" value="전체" />
+          <FilterSelect label="자료 유형" width="w-[130px]" options={['전체', '이용 가이드', '데이터 목록', '보고서', '서식', '매뉴얼', '기타']} value={typeF} onChange={setTypeF} />
+          <FilterSelect label="파일 형식" width="w-[120px]" options={['전체', 'PDF', 'HWP', 'DOCX', 'XLSX', 'ZIP']} value={formatF} onChange={setFormatF} />
           <DateRangePicker label="등록기간" />
           <div className="flex items-center gap-[12px] ml-[24px]">
             <button
@@ -96,7 +93,7 @@ export default function AdminArchive({ onShowToast, registerOpen, onCloseRegiste
               검색
             </button>
             <button
-              onClick={() => onShowToast?.('검색 조건이 초기화되었습니다.')}
+              onClick={reset}
               className="h-[48px] px-[20px] rounded-[8px] border border-[#CDD1D5] bg-white text-[16px] font-medium text-[#464C53] hover:border-[var(--gp-primary)] hover:text-[var(--gp-primary)] transition-colors"
             >
               초기화
@@ -108,7 +105,7 @@ export default function AdminArchive({ onShowToast, registerOpen, onCloseRegiste
       <div className="flex flex-col gap-[16px] mt-[8px]">
         {/* Toolbar */}
         <div className="flex items-center justify-between">
-          <span className="text-[16px] text-[#1E2124]">총 <b className="font-semibold">128</b>건</span>
+          <span className="text-[16px] text-[#1E2124]">총 <b className="font-semibold">{filtered.length}</b>건</span>
           <div className="flex items-center gap-[12px]">
             <button
               onClick={() => onShowToast?.('선택한 항목을 삭제합니다.')}
@@ -134,7 +131,7 @@ export default function AdminArchive({ onShowToast, registerOpen, onCloseRegiste
             <span className="w-[110px] px-[8px] text-center">등록일</span>
             <span className="w-[150px] px-[8px] text-center">관리</span>
           </div>
-          {rows.map((row, idx) => (
+          {filtered.map((row, idx) => (
             <div key={idx} className="flex items-center h-[48px] text-[14px] text-[#1E2124] border-t border-[#E6E8EA] hover:bg-[#F9FAFB]">
               <span className="w-[52px] flex justify-center"><Checkbox /></span>
               <span className="w-[60px] px-[8px] text-center">{row.no}</span>

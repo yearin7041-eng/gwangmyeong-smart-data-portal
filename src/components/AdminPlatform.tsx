@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Search, ChevronDown, X } from 'lucide-react';
 import Checkbox from './Checkbox';
+import FilterSelect from './FilterSelect';
 
 interface AdminPlatformProps {
   onShowToast?: (msg: string) => void;
@@ -41,25 +42,23 @@ const rows: Row[] = [
 const statusBadge = (status: string) =>
   status === '노출' ? 'bg-[#EAF6EC] text-[#3FA654]' : 'bg-[#F4F5F6] text-[#8A949E]';
 
-function SelectButton({ label, value, width = 'w-[100px]', height = 'h-[48px]', radius = 'rounded-[6px]', onClick }: { label?: string; value: string; width?: string; height?: string; radius?: string; onClick?: () => void }) {
-  return (
-    <div className="flex items-center gap-[8px]">
-      {label && <span className="text-[14px] font-medium text-[#464C53] whitespace-nowrap">{label}</span>}
-      <button
-        onClick={onClick}
-        className={`${height} ${width} px-[16px] ${radius} border border-[#CDD1D5] bg-white flex items-center justify-between text-[14px] text-[#131416] hover:border-[var(--gp-primary)] transition-colors`}
-      >
-        <span className="whitespace-nowrap">{value}</span>
-        <ChevronDown size={16} className="text-[#7C8896] shrink-0" />
-      </button>
-    </div>
-  );
-}
-
 export default function AdminPlatform({ onShowToast, registerOpen, onCloseRegister }: AdminPlatformProps) {
   const [activePage, setActivePage] = useState(1);
   const [editTarget, setEditTarget] = useState<Row | null>(null);
+  const [search, setSearch] = useState('');
+  const [catF, setCatF] = useState('전체');
+  const [statusF, setStatusF] = useState('전체');
+  const [menuF, setMenuF] = useState('전체');
   const closeModal = () => { setEditTarget(null); onCloseRegister?.(); };
+
+  const q = search.trim();
+  const filtered = rows.filter(r =>
+    (catF === '전체' || r.category === catF) &&
+    (statusF === '전체' || r.status === statusF) &&
+    (menuF === '전체' || r.menu === menuF) &&
+    (q === '' || r.name.includes(q) || r.menu.includes(q))
+  );
+  const reset = () => { setSearch(''); setCatF('전체'); setStatusF('전체'); setMenuF('전체'); };
 
   return (
     <>
@@ -78,13 +77,13 @@ export default function AdminPlatform({ onShowToast, registerOpen, onCloseRegist
       {/* Filter row */}
       <div className="flex items-center gap-[16px] flex-wrap">
         <div className="gp-searchfield" style={{ flex: '0 0 350px', width: '350px' }}>
-          <input type="text" placeholder="플랫폼명, 관련 메뉴 검색" />
+          <input type="text" placeholder="플랫폼명, 관련 메뉴 검색" value={search} onChange={e => setSearch(e.target.value)} />
           <Search className="gp-ico" size={20} />
         </div>
         <div className="flex items-center gap-[24px] ml-auto flex-wrap">
-          <SelectButton label="카테고리" value="전체" />
-          <SelectButton label="노출 상태" value="전체" />
-          <SelectButton label="관련 메뉴" value="전체" />
+          <FilterSelect label="카테고리" width="w-[150px]" options={['전체', '광명시 플랫폼', '시민참여', '공공데이터', '정책 · 통계', '지도']} value={catF} onChange={setCatF} />
+          <FilterSelect label="노출 상태" width="w-[120px]" options={['전체', '노출', '숨김']} value={statusF} onChange={setStatusF} />
+          <FilterSelect label="관련 메뉴" width="w-[160px]" options={['전체', 'Energy Mile', '개인탄소저감활동', '데이터목록', '정책 참고', '연관플랫폼']} value={menuF} onChange={setMenuF} />
           <div className="flex items-center gap-[12px] ml-[24px]">
             <button
               onClick={() => onShowToast?.('검색 결과를 불러왔습니다.')}
@@ -93,7 +92,7 @@ export default function AdminPlatform({ onShowToast, registerOpen, onCloseRegist
               검색
             </button>
             <button
-              onClick={() => onShowToast?.('검색 조건이 초기화되었습니다.')}
+              onClick={reset}
               className="h-[48px] px-[20px] rounded-[8px] border border-[#CDD1D5] bg-white text-[16px] font-medium text-[#464C53] hover:border-[var(--gp-primary)] hover:text-[var(--gp-primary)] transition-colors"
             >
               초기화
@@ -105,7 +104,7 @@ export default function AdminPlatform({ onShowToast, registerOpen, onCloseRegist
       <div className="flex flex-col gap-[16px] mt-[8px]">
         {/* Toolbar */}
         <div className="flex items-center justify-between">
-          <span className="text-[16px] text-[#1E2124]">총 <b className="font-semibold">128</b>건</span>
+          <span className="text-[16px] text-[#1E2124]">총 <b className="font-semibold">{filtered.length}</b>건</span>
           <button
             onClick={() => onShowToast?.('선택한 항목을 삭제합니다.')}
             className="h-[40px] px-[16px] rounded-[8px] border border-[#CDD1D5] bg-white text-[14px] font-medium text-[#464C53] hover:border-[var(--gp-primary)] hover:text-[var(--gp-primary)] transition-colors"
@@ -127,7 +126,7 @@ export default function AdminPlatform({ onShowToast, registerOpen, onCloseRegist
             <span className="w-[110px] px-[8px] text-center">바로가기 URL</span>
             <span className="w-[80px] px-[8px] text-center">관리</span>
           </div>
-          {rows.map((row, idx) => (
+          {filtered.map((row, idx) => (
             <div key={idx} className="flex items-center h-[48px] text-[14px] text-[#1E2124] border-t border-[#E6E8EA] hover:bg-[#F9FAFB]">
               <span className="w-[52px] flex justify-center"><Checkbox /></span>
               <span className="w-[60px] px-[8px] text-center">{row.no}</span>

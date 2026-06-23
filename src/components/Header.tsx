@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { Menu, X, ArrowRight } from 'lucide-react';
 
 interface HeaderProps {
-  currentPage: 'intro' | 'archive' | 'map' | 'cityMap' | 'dataList' | 'dataDetail' | 'personalCarbon' | 'relatedPlatforms' | 'notice' | 'noticeDetail' | 'admin' | 'login';
-  onNavigate: (page: 'intro' | 'archive' | 'map' | 'cityMap' | 'dataList' | 'dataDetail' | 'personalCarbon' | 'relatedPlatforms' | 'notice' | 'noticeDetail' | 'admin' | 'login') => void;
+  currentPage: 'home' | 'intro' | 'archive' | 'map' | 'cityMap' | 'dataList' | 'dataDetail' | 'personalCarbon' | 'relatedPlatforms' | 'notice' | 'noticeDetail' | 'admin' | 'login';
+  onNavigate: (page: 'home' | 'intro' | 'archive' | 'map' | 'cityMap' | 'dataList' | 'dataDetail' | 'personalCarbon' | 'relatedPlatforms' | 'notice' | 'noticeDetail' | 'admin' | 'login') => void;
 }
 
 export default function Header({ currentPage, onNavigate }: HeaderProps) {
@@ -19,10 +19,10 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
       <div className="max-w-[1440px] mx-auto px-0 h-[80px] flex items-center justify-between">
         {/* Logo */}
         <a 
-          href="/" 
+          href="/"
           onClick={(e) => {
             e.preventDefault();
-            onNavigate('intro');
+            onNavigate('home');
           }}
           className="flex items-center shrink-0"
         >

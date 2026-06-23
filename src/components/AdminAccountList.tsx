@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Plus, Search, ChevronDown } from 'lucide-react';
 import Checkbox from './Checkbox';
+import FilterSelect from './FilterSelect';
 
 interface AdminAccountListProps {
   onShowToast?: (msg: string) => void;
@@ -47,23 +48,24 @@ const statusBadge = (status: string) => {
   }
 };
 
-function SelectButton({ label, value, width = 'w-[100px]', onClick }: { label?: string; value: string; width?: string; onClick?: () => void }) {
-  return (
-    <div className="flex items-center gap-[8px]">
-      {label && <span className="text-[14px] font-medium text-[#464C53] whitespace-nowrap">{label}</span>}
-      <button
-        onClick={onClick}
-        className={`h-[48px] ${width} px-[16px] rounded-[6px] border border-[#CDD1D5] bg-white flex items-center justify-between text-[14px] text-[#131416] hover:border-[var(--gp-primary)] transition-colors`}
-      >
-        <span className="whitespace-nowrap">{value}</span>
-        <ChevronDown size={16} className="text-[#7C8896] shrink-0" />
-      </button>
-    </div>
-  );
-}
-
 export default function AdminAccountList({ onShowToast, onCreate }: AdminAccountListProps) {
   const [activePage, setActivePage] = useState(1);
+  const [search, setSearch] = useState('');
+  const [statusF, setStatusF] = useState('전체');
+  const [roleF, setRoleF] = useState('전체');
+  const [loginF, setLoginF] = useState('전체');
+
+  const q = search.trim();
+  const filtered = rows.filter(r =>
+    (statusF === '전체' || r.status === statusF) &&
+    (roleF === '전체' || r.role === roleF) &&
+    (loginF === '전체' || r.loginType === loginF) &&
+    (q === '' || r.name.includes(q) || r.email.includes(q))
+  );
+
+  const reset = () => {
+    setSearch(''); setStatusF('전체'); setRoleF('전체'); setLoginF('전체');
+  };
 
   return (
     <main className="flex-1 p-[32px] flex flex-col gap-[24px] bg-white">
@@ -96,13 +98,13 @@ export default function AdminAccountList({ onShowToast, onCreate }: AdminAccount
       {/* Filter row */}
       <div className="flex items-center gap-[16px] flex-wrap">
         <div className="gp-searchfield" style={{ flex: '0 0 350px', width: '350px' }}>
-          <input type="text" placeholder="이름 또는 이메일 검색" />
+          <input type="text" placeholder="이름 또는 이메일 검색" value={search} onChange={e => setSearch(e.target.value)} />
           <Search className="gp-ico" size={20} />
         </div>
         <div className="flex items-center gap-[24px] ml-auto flex-wrap">
-          <SelectButton label="상태" value="전체" />
-          <SelectButton label="권한 등급" value="전체" />
-          <SelectButton label="로그인 유형" value="전체" />
+          <FilterSelect label="상태" width="w-[110px]" options={['전체', '활성', '승인대기', '비활성']} value={statusF} onChange={setStatusF} />
+          <FilterSelect label="권한 등급" width="w-[150px]" options={['전체', '최고 관리자', '운영 관리자', '콘텐츠 관리자', '조회 관리자']} value={roleF} onChange={setRoleF} />
+          <FilterSelect label="로그인 유형" width="w-[130px]" options={['전체', 'Google', 'Naver', 'Kakao']} value={loginF} onChange={setLoginF} />
           <div className="flex items-center gap-[12px] ml-[24px]">
             <button
               onClick={() => onShowToast?.('검색 결과를 불러왔습니다.')}
@@ -111,7 +113,7 @@ export default function AdminAccountList({ onShowToast, onCreate }: AdminAccount
               검색
             </button>
             <button
-              onClick={() => onShowToast?.('검색 조건이 초기화되었습니다.')}
+              onClick={reset}
               className="h-[48px] px-[20px] rounded-[8px] border border-[#CDD1D5] bg-white text-[16px] font-medium text-[#464C53] hover:border-[var(--gp-primary)] hover:text-[var(--gp-primary)] transition-colors"
             >
               초기화
@@ -123,7 +125,7 @@ export default function AdminAccountList({ onShowToast, onCreate }: AdminAccount
       <div className="flex flex-col gap-[16px] mt-[8px]">
         {/* Toolbar */}
         <div className="flex items-center justify-between">
-          <span className="text-[16px] text-[#1E2124]">총 <b className="font-semibold">128</b>건</span>
+          <span className="text-[16px] text-[#1E2124]">총 <b className="font-semibold">{filtered.length}</b>건</span>
           <button
             onClick={() => onShowToast?.('선택한 항목을 삭제합니다.')}
             className="h-[40px] px-[16px] rounded-[8px] border border-[#CDD1D5] bg-white text-[14px] font-medium text-[#464C53] hover:border-[var(--gp-primary)] hover:text-[var(--gp-primary)] transition-colors"
@@ -146,7 +148,7 @@ export default function AdminAccountList({ onShowToast, onCreate }: AdminAccount
             <span className="w-[110px] px-[8px] text-center">등록일</span>
             <span className="w-[80px] px-[8px] text-center">관리</span>
           </div>
-          {rows.map((row, idx) => (
+          {filtered.map((row, idx) => (
             <div key={idx} className="flex items-center h-[48px] text-[14px] text-[#1E2124] border-t border-[#E6E8EA] hover:bg-[#F9FAFB]">
               <span className="w-[52px] flex justify-center"><Checkbox /></span>
               <span className="w-[60px] px-[8px] text-center">{row.no}</span>

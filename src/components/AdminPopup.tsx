@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Search, ChevronDown, Calendar, X } from 'lucide-react';
 import DateRangePicker from './DateRangePicker';
 import Checkbox from './Checkbox';
+import FilterSelect from './FilterSelect';
 import DatePicker from './DatePicker';
 
 interface AdminPopupProps {
@@ -49,27 +50,26 @@ const statusBadge = (status: string) => {
   }
 };
 
-function SelectButton({ label, value, width = 'w-[100px]', height = 'h-[48px]', radius = 'rounded-[6px]', onClick }: { label?: string; value: string; width?: string; height?: string; radius?: string; onClick?: () => void }) {
-  return (
-    <div className="flex items-center gap-[8px]">
-      {label && <span className="text-[14px] font-medium text-[#464C53] whitespace-nowrap">{label}</span>}
-      <button
-        onClick={onClick}
-        className={`${height} ${width} px-[16px] ${radius} border border-[#CDD1D5] bg-white flex items-center justify-between text-[14px] text-[#131416] hover:border-[var(--gp-primary)] transition-colors`}
-      >
-        <span className="whitespace-nowrap">{value}</span>
-        <ChevronDown size={16} className="text-[#7C8896] shrink-0" />
-      </button>
-    </div>
-  );
-}
-
 export default function AdminPopup({ onShowToast, registerOpen, onCloseRegister }: AdminPopupProps) {
   const [activePage, setActivePage] = useState(1);
   const [previewRow, setPreviewRow] = useState<Row | null>(null);
   const [editTarget, setEditTarget] = useState<Row | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Row | null>(null);
+  const [search, setSearch] = useState('');
+  const [typeF, setTypeF] = useState('전체');
+  const [posF, setPosF] = useState('전체');
+  const [statusF, setStatusF] = useState('전체');
   const closeModal = () => { setEditTarget(null); onCloseRegister?.(); };
+
+  const typeOf = (p: string) => (p.includes('팝업') ? '팝업' : '배너');
+  const q = search.trim();
+  const filtered = rows.filter(r =>
+    (typeF === '전체' || typeOf(r.position) === typeF) &&
+    (posF === '전체' || r.position === posF) &&
+    (statusF === '전체' || r.status === statusF) &&
+    (q === '' || r.title.includes(q))
+  );
+  const reset = () => { setSearch(''); setTypeF('전체'); setPosF('전체'); setStatusF('전체'); };
 
   return (
     <>
@@ -88,13 +88,13 @@ export default function AdminPopup({ onShowToast, registerOpen, onCloseRegister 
       {/* Filter row */}
       <div className="flex items-center gap-[16px] flex-wrap">
         <div className="gp-searchfield" style={{ flex: '0 0 350px', width: '350px' }}>
-          <input type="text" placeholder="배너명 또는 팝업명 검색" />
+          <input type="text" placeholder="배너명 또는 팝업명 검색" value={search} onChange={e => setSearch(e.target.value)} />
           <Search className="gp-ico" size={20} />
         </div>
         <div className="flex items-center gap-[24px] ml-auto flex-wrap">
-          <SelectButton label="유형" value="전체" />
-          <SelectButton label="노출 위치" value="전체" />
-          <SelectButton label="상태" value="전체" />
+          <FilterSelect label="유형" width="w-[110px]" options={['전체', '팝업', '배너']} value={typeF} onChange={setTypeF} />
+          <FilterSelect label="노출 위치" width="w-[150px]" options={['전체', '메인 상단', '메인 중단', '메인 하단', '전체 화면 팝업', '공지사항 상단']} value={posF} onChange={setPosF} />
+          <FilterSelect label="상태" width="w-[110px]" options={['전체', '노출', '숨김', '종료']} value={statusF} onChange={setStatusF} />
           <DateRangePicker label="게시기간" />
           <div className="flex items-center gap-[12px] ml-[24px]">
             <button
@@ -104,7 +104,7 @@ export default function AdminPopup({ onShowToast, registerOpen, onCloseRegister 
               검색
             </button>
             <button
-              onClick={() => onShowToast?.('검색 조건이 초기화되었습니다.')}
+              onClick={reset}
               className="h-[48px] px-[20px] rounded-[8px] border border-[#CDD1D5] bg-white text-[16px] font-medium text-[#464C53] hover:border-[var(--gp-primary)] hover:text-[var(--gp-primary)] transition-colors"
             >
               초기화
@@ -116,7 +116,7 @@ export default function AdminPopup({ onShowToast, registerOpen, onCloseRegister 
       <div className="flex flex-col gap-[16px] mt-[8px]">
         {/* Toolbar */}
         <div className="flex items-center justify-between">
-          <span className="text-[16px] text-[#1E2124]">총 <b className="font-semibold">128</b>건</span>
+          <span className="text-[16px] text-[#1E2124]">총 <b className="font-semibold">{filtered.length}</b>건</span>
           <button
             onClick={() => onShowToast?.('선택한 항목을 삭제합니다.')}
             className="h-[40px] px-[16px] rounded-[8px] border border-[#CDD1D5] bg-white text-[14px] font-medium text-[#464C53] hover:border-[var(--gp-primary)] hover:text-[var(--gp-primary)] transition-colors"
@@ -138,7 +138,7 @@ export default function AdminPopup({ onShowToast, registerOpen, onCloseRegister 
             <span className="w-[70px] px-[8px] text-center">링크</span>
             <span className="w-[150px] px-[8px] text-center">관리</span>
           </div>
-          {rows.map((row, idx) => (
+          {filtered.map((row, idx) => (
             <div key={idx} className="flex items-center h-[48px] text-[14px] text-[#1E2124] border-t border-[#E6E8EA] hover:bg-[#F9FAFB]">
               <span className="w-[52px] flex justify-center"><Checkbox /></span>
               <span className="w-[60px] px-[8px] text-center">{row.no}</span>

@@ -941,7 +941,7 @@
       <div class="mile-tooltip__hint">클릭하여 자세히보기 <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
     </div>
 
-    <script src="./js/buildingInteraction.js?v=54"></script>
+    <script src="./js/buildingInteraction.js?v=55"></script>
 
     <!-- React 앱(부모)으로 네비게이션 전달: iframe 내부 메뉴 클릭 → 부모 라우팅 -->
     <script>
@@ -981,6 +981,17 @@
         // 계정 / 알림 버튼 → 로그인
         document.querySelectorAll('.site-actions__user, .site-actions__alarm').forEach(function (btn) {
           btn.addEventListener('click', function () { go('login'); });
+        });
+
+        // 마일별 데이터 바로가기 카드 → 데이터 지도 > 마일별 데이터 (해당 마일 탭 선택)
+        var mileByHref = { '#energy': 'energy', '#mobility': 'mobility', '#safety': 'safety', '#data': 'data' };
+        document.querySelectorAll('.gm2-mc').forEach(function (card) {
+          var mile = mileByHref[card.getAttribute('href')];
+          if (!mile) return;
+          card.addEventListener('click', function (e) {
+            e.preventDefault();
+            window.parent.postMessage({ type: 'gm-navigate', page: 'map', mile: mile }, '*');
+          });
         });
       })();
     </script>

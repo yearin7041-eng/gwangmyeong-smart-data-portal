@@ -43,6 +43,9 @@ export default function App() {
       if (e.origin !== window.location.origin) return;
       const data: any = e.data;
       if (data && data.type === 'gm-navigate' && allowed.includes(data.page)) {
+        if (data.page === 'map' && ['energy', 'mobility', 'safety', 'data'].includes(data.mile)) {
+          setActiveMileTab(data.mile);
+        }
         setCurrentPage(data.page);
         window.scrollTo({ top: 0 });
       }
@@ -83,7 +86,7 @@ export default function App() {
         <>
           <Header currentPage={currentPage} onNavigate={setCurrentPage} />
           <iframe
-            src="/home/index.html?v=54"
+            src="/home/index.html?v=55"
             title="광명 스마트데이터포털"
             className="w-full border-0 block"
             style={{ height: 'calc(100vh - 80px)' }}

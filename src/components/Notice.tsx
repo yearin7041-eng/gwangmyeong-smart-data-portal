@@ -20,14 +20,14 @@ const FILTER_TABS = ['전체', '공지', '서비스 점검', '데이터 갱신',
 const SORT_OPTIONS = ['최신순', '조회순', '제목순'];
 
 const NOTICE_ROWS: NoticeRow[] = [
-  { no: 100, pinned: true, category: '서비스 점검', title: '에코뷰 서비스 정기 점검 안내', hasFile: true, date: '2026-06-05', views: 1245 },
+  { no: 100, pinned: true, category: '서비스 점검', title: '광명 스마트데이터포털 서비스 정기 점검 안내', hasFile: true, date: '2026-06-05', views: 1245 },
   { no: 99, category: '데이터 갱신', title: '데이터 시각화 Energy Mile 지표 갱신 안내', hasFile: true, date: '2026-06-05', views: 128 },
   { no: 98, category: '이용안내', title: '연관플랫폼 외부 링크 이동 안내', hasFile: false, date: '2026-06-05', views: 128 },
   { no: 97, category: '공지', title: '개인탄소저감활동 페이지 이용 안내', hasFile: false, date: '2026-06-05', views: 325 },
-  { no: 96, category: '서비스 점검', title: '에코뷰 데이터목록 정부 서비스 API 점검 안내', hasFile: true, date: '2026-06-05', views: 516 },
+  { no: 96, category: '서비스 점검', title: '광명 스마트데이터포털 데이터목록 API 점검 안내', hasFile: true, date: '2026-06-05', views: 516 },
   { no: 95, category: '데이터 갱신', title: '강소형스마트도시 광명 사업소개 자료 업데이트 안내', hasFile: true, date: '2026-06-05', views: 128 },
   { no: 94, category: '정책 안내', title: '탄소중립 스마트도시 데이터 제공 기준 안내', hasFile: true, date: '2026-06-05', views: 402 },
-  { no: 93, category: '공지', title: '에코뷰 플랫폼 이용 가이드 안내', hasFile: false, date: '2026-06-05', views: 655 },
+  { no: 93, category: '공지', title: '광명 스마트데이터포털 이용 가이드 안내', hasFile: false, date: '2026-06-05', views: 655 },
   { no: 92, category: '데이터 갱신', title: '데이터 시각화 Energy Mile 지표 갱신 안내', hasFile: false, date: '2026-06-05', views: 128 },
   { no: 91, category: '데이터 갱신', title: '강소형스마트도시 광명 사업소개 자료 업데이트 안내', hasFile: true, date: '2026-06-05', views: 128 },
 ];
@@ -56,7 +56,7 @@ export default function Notice({ onShowToast, onNavigate }: NoticeProps) {
         <div className="max-w-[1440px] mx-auto w-full px-0 relative z-10 flex flex-col gap-[8px]">
           <h1 className="text-[40px] font-bold text-[#16243B] font-score">공지사항</h1>
           <p className="text-[16px] text-[#5A6878] leading-relaxed font-score">
-            에코뷰의 주요 소식, 서비스 점검, 데이터 갱신 및 운영 안내를 확인하세요.<br />
+            광명 스마트데이터포털의 주요 소식, 서비스 점검, 데이터 갱신 및 운영 안내를 확인하세요.<br />
             중요한 안내와 최신 공지를 빠르게 확인할 수 있습니다.
           </p>
         </div>

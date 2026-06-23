@@ -21,11 +21,11 @@ export default function DataList({ onShowToast, onNavigate }: DataListProps) {
   const tabs = ['전체', '에너지', '교통·이동', '환경·기후', '안전·재난', '탄소중립', '공공시설', '시민참여', '행정·정책'];
 
   const dummyData = [
-    { id: 1, title: '광명역세권 건물 에너지 사용량 데이터', desc: '광명역세권 주요 건축물의 월별 에너지 사용량 및 탄소배출 추이 데이터', sector: '탄소중립', format: 'CSV, API', scope: '공개', cycle: '반단위', date: '2026.05.07', views: 128 },
-    { id: 2, title: '광명역세권 DRT 운행 데이터', desc: '전/버스 기반 친환경 DRT의 운행서비, 호출건수, 이용량 데이터', sector: '교통·이동', format: 'API', scope: '부분', cycle: '반단위', date: '2026.05.07', views: 128 },
-    { id: 3, title: '광명역세권 건물 에너지 사용량 데이터', desc: '광명역세권 주요 건축물의 월별 에너지 사용량 및 탄소배출 추이 데이터', sector: '탄소중립', format: 'CSV, API', scope: '요청시', cycle: '반단위', date: '2026.05.07', views: 128 },
-    { id: 4, title: '광명역세권 건물 에너지 사용량 데이터', desc: '광명역세권 주요 건축물의 월별 에너지 사용량 및 탄소배출 추이 데이터', sector: '탄소중립', format: 'CSV, API', scope: '공개', cycle: '반단위', date: '2026.05.07', views: 128 },
-    { id: 5, title: '광명역세권 건물 에너지 사용량 데이터', desc: '광명역세권 주요 건축물의 월별 에너지 사용량 및 탄소배출 추이 데이터', sector: '탄소중립', format: 'CSV, API', scope: '공개', cycle: '반단위', date: '2026.05.07', views: 128 },
+    { id: 1, title: '신재생 태양광 발전량 데이터', desc: '케빈랩 연계 태양광 발전소의 시간대별 발전량·누적발전량 및 AI 예측 발전량 데이터', sector: '에너지', format: 'API', scope: '공개', cycle: '시간 단위', date: '2026.05.07', views: 1652 },
+    { id: 2, title: '친환경 배달 전기이륜차 운행 데이터', desc: '우아한형제들 연계 전기이륜차 라이더 수·이동거리·배달건수 및 BSS 배터리 교환 데이터', sector: '교통·이동', format: 'API', scope: '부분 공개', cycle: '일 단위', date: '2026.05.07', views: 231 },
+    { id: 3, title: 'AIoT 우수관로 수위 데이터', desc: '스파이어테크놀로지 연계 맨홀·지표면 수위, 수위레벨 및 홍수 경보등급 실시간 데이터', sector: '안전·재난', format: 'JSON', scope: '공개', cycle: '실시간', date: '2026.05.07', views: 204 },
+    { id: 4, title: 'IoT 그린배리어 미세먼지 데이터', desc: '영진기술 연계 미세먼지·초미세먼지 농도 및 온습도·풍향풍속 측정 데이터', sector: '환경·기후', format: 'JSON', scope: '공개', cycle: '시간 단위', date: '2026.05.07', views: 198 },
+    { id: 5, title: '광명시 주민등록인구 통계', desc: '정책플랫폼 연계 광명시 행정동별 주민등록 인구·세대 통계 데이터', sector: '행정·정책', format: 'CSV, API', scope: '공개', cycle: '일 단위', date: '2026.05.07', views: 128 },
   ];
 
   return (

@@ -31,16 +31,16 @@ interface Row {
 }
 
 const rows: Row[] = [
-  { no: 99, mile: 'Energy Mile', name: '전력 사용량 데이터', type: '센서', provider: '광명시', cycle: '일간', status: '공개', updated: '2026.05.20' },
-  { no: 98, mile: 'Mobility Mile', name: '전기이륜차 충전소 데이터', type: '공간정보', provider: '광명시', cycle: '수시', status: '비공개', updated: '2026.05.20' },
-  { no: 97, mile: 'Safety Mile', name: '침수위험 수위 데이터', type: '센서', provider: '광명시', cycle: '실시간', status: '공개', updated: '2026.05.20' },
-  { no: 96, mile: 'Data Mile', name: '공공 와이파이 현황 데이터', type: '행정데이터', provider: '광명시', cycle: '월간', status: '공개', updated: '2026.05.20' },
-  { no: 95, mile: 'Energy Mile', name: '전력 사용량 데이터', type: '통계', provider: '광명시', cycle: '월간', status: '비공개', updated: '2026.05.20' },
-  { no: 94, mile: 'Energy Mile', name: '건물 에너지 점검량 데이터', type: '센서', provider: '광명시', cycle: '실시간', status: '비공개', updated: '2026.05.20' },
-  { no: 93, mile: 'Energy Mile', name: '전력 사용량 데이터', type: '센서', provider: '광명시', cycle: '실시간', status: '비공개', updated: '2026.05.20' },
-  { no: 92, mile: 'Energy Mile', name: '전력 사용량 데이터', type: '센서', provider: '광명시', cycle: '월간', status: '공개', updated: '2026.05.20' },
-  { no: 91, mile: 'Energy Mile', name: '전력 사용량 데이터', type: '센서', provider: '광명시', cycle: '월간', status: '공개', updated: '2026.05.20' },
-  { no: 90, mile: 'Energy Mile', name: '전력 사용량 데이터', type: '센서', provider: '광명시', cycle: '월간', status: '공개', updated: '2026.05.20' },
+  { no: 99, mile: 'Energy Mile', name: '신재생 태양광 발전량 데이터', type: '센서', provider: '케빈랩', cycle: '실시간', status: '공개', updated: '2026.05.20' },
+  { no: 98, mile: 'Energy Mile', name: 'AI 예측 발전량 데이터', type: '통계', provider: '케빈랩', cycle: '일간', status: '공개', updated: '2026.05.20' },
+  { no: 97, mile: 'Mobility Mile', name: '전기이륜차 운행 데이터', type: '센서', provider: '우아한형제들', cycle: '수시', status: '공개', updated: '2026.05.20' },
+  { no: 96, mile: 'Mobility Mile', name: 'BSS 배터리 교환 데이터', type: '센서', provider: 'LG', cycle: '실시간', status: '비공개', updated: '2026.05.20' },
+  { no: 95, mile: 'Safety Mile', name: 'AIoT 우수관로 수위 데이터', type: '센서', provider: '스파이어테크놀로지', cycle: '실시간', status: '공개', updated: '2026.05.20' },
+  { no: 94, mile: 'Safety Mile', name: '그린배리어 미세먼지 데이터', type: '센서', provider: '영진기술', cycle: '수시', status: '공개', updated: '2026.05.20' },
+  { no: 93, mile: 'Data Mile', name: '주민등록인구 통계', type: '행정데이터', provider: '광명시', cycle: '일간', status: '공개', updated: '2026.05.20' },
+  { no: 92, mile: 'Data Mile', name: '대기오염 측정정보', type: '행정데이터', provider: '광명시', cycle: '수시', status: '공개', updated: '2026.05.20' },
+  { no: 91, mile: 'Data Mile', name: '공영주차장 현황', type: '공간정보', provider: '광명시', cycle: '월간', status: '공개', updated: '2026.05.20' },
+  { no: 90, mile: 'Energy Mile', name: '공공건물 태양광발전시설', type: '공간정보', provider: '광명시', cycle: '월간', status: '비공개', updated: '2026.05.20' },
 ];
 
 const statusBadge = (status: string) =>

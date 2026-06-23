@@ -83,7 +83,7 @@ export default function App() {
         <>
           <Header currentPage={currentPage} onNavigate={setCurrentPage} />
           <iframe
-            src="/home/index.html?v=53"
+            src="/home/index.html?v=54"
             title="광명 스마트데이터포털"
             className="w-full border-0 block"
             style={{ height: 'calc(100vh - 80px)' }}

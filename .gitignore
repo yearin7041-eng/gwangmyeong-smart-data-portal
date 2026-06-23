@@ -6,3 +6,6 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# 내부 기획 문서 (public 저장소 비공개)
+data/

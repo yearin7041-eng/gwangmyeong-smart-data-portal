@@ -381,11 +381,11 @@ export default function MileDataMap({ activeTab, onTabChange, onShowToast }: Mil
 
             <div className="flex flex-col gap-1.5 mt-[4px] flex-1 justify-center">
               {[
-                { rank: 1, type: '교통', name: '전기차 충전소 이용 현황', val: '1,652', badgeClass: 'gp-badge--success' },
-                { rank: 2, type: '환경', name: '대기질 관측 데이터', val: '231', badgeClass: 'gp-badge--warning' },
-                { rank: 3, type: '교통', name: '공공자전거 대여 이력', val: '204', badgeClass: 'gp-badge--success' },
-                { rank: 4, type: '에너지', name: '전기차 충전소 이용 현황', val: '225', badgeClass: 'gp-badge--info' },
-                { rank: 5, type: '에너지', name: '에너지 사용량 통계', val: '198', badgeClass: 'gp-badge--info' }
+                { rank: 1, type: '교통', name: '전기차충전소 현황', val: '1,652', badgeClass: 'gp-badge--success' },
+                { rank: 2, type: '환경', name: '대기오염 측정정보', val: '231', badgeClass: 'gp-badge--warning' },
+                { rank: 3, type: '교통', name: '공영주차장 현황', val: '204', badgeClass: 'gp-badge--success' },
+                { rank: 4, type: '에너지', name: '공공건물 태양광발전시설', val: '225', badgeClass: 'gp-badge--info' },
+                { rank: 5, type: '행정', name: '주민등록인구 통계', val: '198', badgeClass: 'gp-badge--info' }
               ].map((item, idx) => (
                 <div key={idx} className="flex items-center justify-between text-[14px] font-pretendard-gov">
                   <div className="flex items-center gap-2 min-w-0">
@@ -974,13 +974,13 @@ export default function MileDataMap({ activeTab, onTabChange, onShowToast }: Mil
               {(activeNoticeTab === 'city'
                 ? [
                     { title: '광명시, 탄소중립 실천 경제 활성화..', date: '26.03.13' },
-                    { title: '2026년 에코뷰 서비스 점검 안내', date: '26.03.13' },
+                    { title: '2026년 광명 스마트데이터포털 서비스 점검 안내', date: '26.03.13' },
                     { title: '우리 동네 기후에너지 체험관 운영', date: '26.03.13' }
                   ]
                 : [
                     { title: '스마트데이터포털 시스템 개선 및 보안 업데이트 조치', date: '26.03.12' },
                     { title: '데이터 수집 장비 정기 점검 안내 (5/20)', date: '26.03.11' },
-                    { title: '2026년 에코뷰 서비스 점검에 따른 사이트 중단 안내', date: '26.03.10' }
+                    { title: '2026년 광명 스마트데이터포털 서비스 점검에 따른 사이트 중단 안내', date: '26.03.10' }
                   ]
               ).map((notice, idx) => (
                 <div 

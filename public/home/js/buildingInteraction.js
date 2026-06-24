@@ -242,24 +242,84 @@
     if (pTimer) { clearInterval(pTimer); pTimer = null; }
   }
 
-  /* ── Hover + Click on each building zone ── */
+  /* ── 건물 모양(홀로그램 알파) 기반 정밀 히트테스트 ──
+     사각형 zone 대신, 각 건물 홀로그램 이미지의 불투명 픽셀 위에서만 hover/클릭 인정 */
+  var ALPHA = {};   // key -> { a:Uint8Array, w, h, fit }
+  var ALPHA_THRESHOLD = 40;
+  function preloadAlpha(key) {
+    var el = document.getElementById(BUILDINGS[key].hoverImgId);
+    if (!el) return;
+    function draw() {
+      var nw = el.naturalWidth, nh = el.naturalHeight;
+      if (!nw || !nh) return;
+      var c = document.createElement('canvas'); c.width = nw; c.height = nh;
+      var cx = c.getContext('2d');
+      try {
+        cx.drawImage(el, 0, 0, nw, nh);
+        var d = cx.getImageData(0, 0, nw, nh).data;
+        var a = new Uint8Array(nw * nh);
+        for (var i = 0; i < nw * nh; i++) a[i] = d[i * 4 + 3];
+        ALPHA[key] = { a: a, w: nw, h: nh, fit: (getComputedStyle(el).objectFit || 'contain') };
+      } catch (err) { /* same-origin이라 정상; 실패 시 알파 없음 */ }
+    }
+    if (el.complete && el.naturalWidth) draw();
+    else el.addEventListener('load', draw);
+  }
+  Object.keys(BUILDINGS).forEach(preloadAlpha);
+
+  // 클릭/커서 좌표가 해당 건물 홀로그램의 불투명 영역 위인지 검사
+  function onBuilding(key, x, y) {
+    var info = ALPHA[key];
+    var el = document.getElementById(BUILDINGS[key].hoverImgId);
+    if (!info || !el) return true;  // 알파 정보 없으면 기존처럼 통과(폴백)
+    var r = el.getBoundingClientRect();
+    var rx = x - r.left, ry = y - r.top;
+    if (rx < 0 || ry < 0 || rx > r.width || ry > r.height) return false;
+    var ix, iy;
+    if (info.fit === 'fill') {
+      ix = rx / r.width * info.w; iy = ry / r.height * info.h;
+    } else { // contain
+      var scale = Math.min(r.width / info.w, r.height / info.h);
+      var dw = info.w * scale, dh = info.h * scale;
+      var ox = (r.width - dw) / 2, oy = (r.height - dh) / 2;
+      var lx = rx - ox, ly = ry - oy;
+      if (lx < 0 || ly < 0 || lx > dw || ly > dh) return false;
+      ix = lx / dw * info.w; iy = ly / dh * info.h;
+    }
+    ix = Math.floor(ix); iy = Math.floor(iy);
+    if (ix < 0 || iy < 0 || ix >= info.w || iy >= info.h) return false;
+    return info.a[iy * info.w + ix] > ALPHA_THRESHOLD;
+  }
+
   document.querySelectorAll('.bldg-zone').forEach(function (zone) {
     var key = zone.dataset.building;
     var info = BUILDINGS[key];
     if (!info) return;
+    var hovering = false;
+    zone.style.cursor = 'default';
 
-    zone.addEventListener('mouseenter', function () {
+    zone.addEventListener('mousemove', function (e) {
       if (overlay.classList.contains('is-open')) return;
-      startHoverEffect(zone, info);
-      showTooltip(info, 'building', null, true);
+      var hit = onBuilding(key, e.clientX, e.clientY);
+      if (hit && !hovering) {
+        hovering = true; zone.style.cursor = 'pointer';
+        startHoverEffect(zone, info);
+        showTooltip(info, 'building', null, true);
+      } else if (!hit && hovering) {
+        hovering = false; zone.style.cursor = 'default';
+        stopHoverEffect();
+        hideTooltip();
+      }
     });
 
     zone.addEventListener('mouseleave', function () {
+      hovering = false; zone.style.cursor = 'default';
       stopHoverEffect();
       hideTooltip();
     });
 
-    zone.addEventListener('click', function () {
+    zone.addEventListener('click', function (e) {
+      if (!onBuilding(key, e.clientX, e.clientY)) return;  // 건물 모양 밖 클릭은 무시
       stopHoverEffect();
       openModal(key, info);
     });

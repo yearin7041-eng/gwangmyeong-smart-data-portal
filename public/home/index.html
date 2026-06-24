@@ -878,7 +878,7 @@
         renderer: 'svg',
         loop: true,
         autoplay: true,
-        path: './data.json?v=3',
+        path: './data.json?v=7',
         rendererSettings: {
           preserveAspectRatio: 'xMidYMid slice'
         }
@@ -912,6 +912,12 @@
                   my >= r.top - pad && my <= r.bottom + pad) { over = true; break; }
             }
           }
+          if (window.__busModalOpen) {
+            // 모달 열림 → 즉시 정지(복제 스냅샷 정합). 닫히면 정상 로직 복귀.
+            if (lastSet !== 0) { window.lottieAnim.setSpeed(0); lastSet = 0; }
+            curSpeed = 0; lastOver = true; startT = -1;
+            window.requestAnimationFrame(loop); return;
+          }
           // hover 상태가 바뀌는 순간 새 전환(감속/가속) 시작
           if (over !== lastOver) {
             fromSpeed = curSpeed;
@@ -930,6 +936,183 @@
           window.requestAnimationFrame(loop);
         }
       })();
+
+      /* 버스 클릭 → DRT 운행정보 모달 (Figma 1925:46527). 모달은 버스를 따라다님.
+         모달 마크업이 이 스크립트보다 뒤에 있으므로 DOMContentLoaded 이후 실행. */
+      document.addEventListener('DOMContentLoaded', function () {
+        var modal = document.getElementById('bus-modal');
+        var backdrop = document.getElementById('bus-modal-backdrop');
+        var routeOvl = document.getElementById('bus-route-ovl');   // 노선도 오버레이
+        if (!modal) return;
+        var buses = [];
+        var activeBus = null;
+        var cutout = null;            // active 마커 복제 오버레이(SVG)
+        var PAD = 10; // 클릭 허용 여유(px) — 작은 마커·투명 여백도 잡히도록
+        window.lottieAnim.addEventListener('DOMLoaded', function () {
+          buses = Array.prototype.slice.call(document.querySelectorAll('#lottie-bg .lt-bus'));
+        });
+        function busAt(x, y) {
+          if (!buses.length) { buses = Array.prototype.slice.call(document.querySelectorAll('#lottie-bg .lt-bus')); }
+          for (var i = 0; i < buses.length; i++) {
+            var r = buses[i].getBoundingClientRect();
+            if (r.width && r.height &&
+                x >= r.left - PAD && x <= r.right + PAD &&
+                y >= r.top - PAD && y <= r.bottom + PAD) { return buses[i]; }
+          }
+          return null;
+        }
+        // 클릭한 마커의 짝(버스↔핀)을 90px 이내 가장 가까운 lt-bus에서 찾음
+        function pairOf(el) {
+          var r = el.getBoundingClientRect();
+          var cx = (r.left + r.right) / 2, cy = (r.top + r.bottom) / 2, bestD = 90, pair = null;
+          for (var i = 0; i < buses.length; i++) {
+            if (buses[i] === el) continue;
+            var b = buses[i].getBoundingClientRect();
+            if (!b.width) continue;
+            var d = Math.hypot((b.left + b.right) / 2 - cx, (b.top + b.bottom) / 2 - cy);
+            if (d < bestD) { bestD = d; pair = buses[i]; }
+          }
+          return pair;
+        }
+        function activeRect() {
+          var groups = [activeBus]; var p = pairOf(activeBus); if (p) groups.push(p);
+          var L = 1e9, T = 1e9, R = -1e9, B = -1e9;
+          groups.forEach(function (g) { var r = g.getBoundingClientRect(); L = Math.min(L, r.left); T = Math.min(T, r.top); R = Math.max(R, r.right); B = Math.max(B, r.bottom); });
+          return { left: L, top: T, right: R, bottom: B };
+        }
+        // active 버스+핀을 "정확한 모양 그대로" 딤 위에 복제: 전체 SVG를 복제하되
+        // visibility:hidden 으로 가리고 활성 그룹만 visible 처리(조상 transform/defs 그대로 유지)
+        function buildCutout() {
+          removeCutout();
+          var src = document.querySelector('#lottie-bg svg');
+          if (!src || !activeBus) return;
+          var groups = [activeBus]; var p = pairOf(activeBus); if (p) groups.push(p);
+          groups.forEach(function (g) { g.classList.add('lt-active'); });
+          cutout = src.cloneNode(true);
+          groups.forEach(function (g) { g.classList.remove('lt-active'); });
+          cutout.removeAttribute('id');
+          cutout.setAttribute('class', 'bus-modal-cutout');
+          Array.prototype.forEach.call(cutout.querySelectorAll('.lt-active'), function (g) { g.style.visibility = 'visible'; });
+          document.body.appendChild(cutout);
+          positionCutout();
+        }
+        function positionCutout() {
+          if (!cutout) return;
+          var src = document.querySelector('#lottie-bg svg');
+          if (!src) return;
+          var r = src.getBoundingClientRect();
+          cutout.style.left = r.left + 'px';
+          cutout.style.top = r.top + 'px';
+          cutout.style.width = r.width + 'px';
+          cutout.style.height = r.height + 'px';
+        }
+        function removeCutout() { if (cutout && cutout.parentNode) cutout.parentNode.removeChild(cutout); cutout = null; }
+        function positionRouteOvl() {
+          if (!routeOvl) return;
+          var bg = document.getElementById('lottie-bg'); if (!bg) return;
+          var r = bg.getBoundingClientRect();
+          routeOvl.style.left = r.left + 'px'; routeOvl.style.top = r.top + 'px';
+          routeOvl.style.width = r.width + 'px'; routeOvl.style.height = r.height + 'px';
+        }
+        function position() {
+          if (!activeBus) return;
+          positionCutout();
+          positionRouteOvl();
+          var ar = activeRect();
+          var mw = modal.offsetWidth, mh = modal.offsetHeight;
+          var left = (ar.left + ar.right) / 2 - mw / 2;
+          var top = ar.top - mh - 10;                // 마커 위쪽
+          if (top < 8) top = ar.bottom + 10;         // 위 공간 부족하면 아래쪽
+          left = Math.max(8, Math.min(left, window.innerWidth - mw - 8));
+          top = Math.max(8, Math.min(top, window.innerHeight - mh - 8));
+          modal.style.left = left + 'px';
+          modal.style.top = top + 'px';
+        }
+        function open(bus) {
+          activeBus = bus;
+          window.__busModalOpen = true;             // 지도 애니메이션 즉시 정지(복제 정합)
+          modal.classList.add('is-on'); modal.setAttribute('aria-hidden', 'false');
+          if (backdrop) { backdrop.classList.add('is-on'); backdrop.setAttribute('aria-hidden', 'false'); }
+          if (routeOvl) { routeOvl.classList.add('is-on'); routeOvl.setAttribute('aria-hidden', 'false'); positionRouteOvl(); }
+          requestAnimationFrame(function () { buildCutout(); position(); }); // 정지 1프레임 후 스냅샷
+          position();
+        }
+        function close() {
+          activeBus = null;
+          window.__busModalOpen = false;            // 지도 애니메이션 재개
+          removeCutout();
+          modal.classList.remove('is-on'); modal.setAttribute('aria-hidden', 'true');
+          if (backdrop) { backdrop.classList.remove('is-on'); backdrop.setAttribute('aria-hidden', 'true'); }
+          if (routeOvl) { routeOvl.classList.remove('is-on'); routeOvl.setAttribute('aria-hidden', 'true'); }
+        }
+        // 마커 클릭 → 열기 / 바깥 클릭 → 닫기 (모달 내부 클릭은 유지)
+        document.addEventListener('click', function (e) {
+          if (modal.contains(e.target)) return;
+          if (activeBus) { if (!busAt(e.clientX, e.clientY)) close(); return; }
+          var bus = busAt(e.clientX, e.clientY);
+          if (bus) open(bus);
+        });
+        // 상세보기 → 모빌리티 데이터 지도로 이동
+        modal.querySelector('.bus-modal__foot').addEventListener('click', function () {
+          if (window.parent !== window) {
+            window.parent.postMessage({ type: 'gm-navigate', page: 'map', mile: 'mobility' }, '*');
+          }
+          close();
+        });
+        // 버스가 움직이는 동안 모달이 따라가도록 매 프레임 위치 갱신
+        (function follow() { if (activeBus) position(); window.requestAnimationFrame(follow); })();
+
+        /* ── 버스/오토바이 hover → 차량 모양대로 outline (멈춤은 ease-out 루프가 담당) ──
+           모달은 클릭으로만 열림. */
+        (function () {
+          // 차량 outline 필터 1회 주입
+          var ns = 'http://www.w3.org/2000/svg';
+          var fsvg = document.createElementNS(ns, 'svg');
+          fsvg.setAttribute('width', '0'); fsvg.setAttribute('height', '0');
+          fsvg.style.cssText = 'position:absolute;width:0;height:0';
+          fsvg.innerHTML =
+            '<defs><filter id="lt-outline" x="-50%" y="-50%" width="200%" height="200%">' +
+            '<feMorphology in="SourceAlpha" operator="dilate" radius="40" result="d"/>' +
+            '<feFlood flood-color="#06A85B" result="c"/>' +
+            '<feComposite in="c" in2="d" operator="in" result="ring"/>' +
+            '<feComposite in="ring" in2="SourceAlpha" operator="out" result="outline"/>' +
+            '<feMerge><feMergeNode in="outline"/><feMergeNode in="SourceGraphic"/></feMerge>' +
+            '</filter></defs>';
+          document.body.appendChild(fsvg);
+
+          var mx = -1, my = -1, outlined = [];
+          document.addEventListener('mousemove', function (e) { mx = e.clientX; my = e.clientY; }, { passive: true });
+          document.addEventListener('mouseleave', function () { mx = -1; my = -1; });
+          function setOutline(els) {
+            outlined.forEach(function (el) { if (els.indexOf(el) < 0) el.style.filter = ''; });
+            els.forEach(function (el) { if (outlined.indexOf(el) < 0) el.style.filter = 'url(#lt-outline)'; });
+            outlined = els;
+          }
+          function vehiclesAt(x, y) {
+            var vs = [];
+            for (var i = 0; i < buses.length; i++) {
+              var el = buses[i];
+              if (!el.classList || !el.classList.contains('lt-vehicle')) continue;
+              var r = el.getBoundingClientRect();
+              if (r.width && r.height &&
+                  x >= r.left - PAD && x <= r.right + PAD &&
+                  y >= r.top - PAD && y <= r.bottom + PAD) { if (vs.indexOf(el) < 0) vs.push(el); }
+            }
+            var hov = busAt(x, y);
+            if (hov && !(hov.classList && hov.classList.contains('lt-vehicle'))) {
+              var p = pairOf(hov);
+              if (p && p.classList && p.classList.contains('lt-vehicle') && vs.indexOf(p) < 0) vs.push(p);
+            }
+            return vs;
+          }
+          (function tick() {
+            // 모달 열림 중에는 cutout이 강조하므로 라이브 outline 해제
+            if (window.__busModalOpen || mx < 0) { if (outlined.length) setOutline([]); }
+            else { setOutline(vehiclesAt(mx, my)); }
+            window.requestAnimationFrame(tick);
+          })();
+        })();
+      });
     </script>
 
     <!-- Building Modal Overlay -->
@@ -960,7 +1143,35 @@
       <div class="mile-tooltip__hint">클릭하여 자세히보기 <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
     </div>
 
-    <script src="./js/buildingInteraction.js?v=57"></script>
+    <!-- Bus click modal — DRT 운행정보 (Figma 1925:46527) -->
+    <svg id="bus-route-ovl" class="bus-route-ovl" viewBox="0 0 1920 3139" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><filter id="bus-route-glow" x="-100%" y="-100%" width="300%" height="300%"><feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#5BFFA6" flood-opacity="1"/><feDropShadow dx="0" dy="0" stdDeviation="9" flood-color="#16D26E" flood-opacity="0.95"/><feDropShadow dx="0" dy="0" stdDeviation="22" flood-color="#06A85B" flood-opacity="0.85"/></filter><filter id="pin-glow" x="-120%" y="-120%" width="340%" height="340%"><feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#06A85B" flood-opacity="0.9"/><feDropShadow dx="0" dy="0" stdDeviation="9" flood-color="#06A85B" flood-opacity="0.6"/></filter></defs><path d="M592.5,317.0 C592.5,317.0 631.0,401.0 648.0,416.0 C719.5,476.0 734.4,447.4 753.8,503.0 C770.8,518.0 809.9,602.3 809.9,602.3 C819.9,631.0 898.9,620.0 889.1,665.1 C889.1,665.1 948.2,693.9 935.8,735.3 C926.0,780.4 903.8,776.5 898.0,839.2 C885.6,880.6 829.5,945.3 861.5,983.8 C855.6,1046.5 889.7,1114.3 908.4,1129.1 C940.4,1167.7 1017.8,1183.9 1023.8,1235.9 C1042.6,1250.8 1126.5,1306.8 1097.8,1327.0 C1101.7,1361.0 1029.2,1346.6 1032.5,1389.1 C1003.8,1409.3 919.5,1441.3 970.4,1476.6 C973.7,1519.0 1022.7,1561.5 1022.7,1561.5 C1073.6,1596.7 1506.6,1916.7 1506.6,1916.7" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" stroke-dasharray="10 20" filter="url(#bus-route-glow)" class="bus-route-line"/><g transform="translate(592.5,317.0)"><path d="M12,-46 H78 a14,14 0 0 1 14,14 V-32 a14,14 0 0 1 -14,14 H12 Z" fill="#fff" stroke="#d8d8d8" stroke-width="1"/><text x="28" y="-28" font-family="Pretendard,Pretendard GOV,sans-serif" font-size="12" font-weight="700" fill="#234178" letter-spacing="0.24">1번 정류장</text><path d="M0,0 C-8,-15 -21,-20 -21,-32 A21,21 0 1 1 21,-32 C21,-20 8,-15 0,0 Z" fill="#06A85B" filter="url(#pin-glow)"/><circle cx="0" cy="-32" r="16" fill="#fff"/><text x="0" y="-26" text-anchor="middle" font-family="Pretendard GOV,sans-serif" font-size="17" font-weight="700" fill="#1e2124">1</text></g><g transform="translate(809.9,602.3)"><path d="M12,-46 H78 a14,14 0 0 1 14,14 V-32 a14,14 0 0 1 -14,14 H12 Z" fill="#fff" stroke="#d8d8d8" stroke-width="1"/><text x="28" y="-28" font-family="Pretendard,Pretendard GOV,sans-serif" font-size="12" font-weight="700" fill="#234178" letter-spacing="0.24">2번 정류장</text><path d="M0,0 C-8,-15 -21,-20 -21,-32 A21,21 0 1 1 21,-32 C21,-20 8,-15 0,0 Z" fill="#06A85B" filter="url(#pin-glow)"/><circle cx="0" cy="-32" r="16" fill="#fff"/><text x="0" y="-26" text-anchor="middle" font-family="Pretendard GOV,sans-serif" font-size="17" font-weight="700" fill="#1e2124">2</text></g><g transform="translate(898.0,839.2)"><path d="M12,-46 H78 a14,14 0 0 1 14,14 V-32 a14,14 0 0 1 -14,14 H12 Z" fill="#fff" stroke="#d8d8d8" stroke-width="1"/><text x="28" y="-28" font-family="Pretendard,Pretendard GOV,sans-serif" font-size="12" font-weight="700" fill="#234178" letter-spacing="0.24">3번 정류장</text><path d="M0,0 C-8,-15 -21,-20 -21,-32 A21,21 0 1 1 21,-32 C21,-20 8,-15 0,0 Z" fill="#06A85B" filter="url(#pin-glow)"/><circle cx="0" cy="-32" r="16" fill="#fff"/><text x="0" y="-26" text-anchor="middle" font-family="Pretendard GOV,sans-serif" font-size="17" font-weight="700" fill="#1e2124">3</text></g><g transform="translate(1023.8,1235.9)"><path d="M12,-46 H78 a14,14 0 0 1 14,14 V-32 a14,14 0 0 1 -14,14 H12 Z" fill="#fff" stroke="#d8d8d8" stroke-width="1"/><text x="28" y="-28" font-family="Pretendard,Pretendard GOV,sans-serif" font-size="12" font-weight="700" fill="#234178" letter-spacing="0.24">4번 정류장</text><path d="M0,0 C-8,-15 -21,-20 -21,-32 A21,21 0 1 1 21,-32 C21,-20 8,-15 0,0 Z" fill="#06A85B" filter="url(#pin-glow)"/><circle cx="0" cy="-32" r="16" fill="#fff"/><text x="0" y="-26" text-anchor="middle" font-family="Pretendard GOV,sans-serif" font-size="17" font-weight="700" fill="#1e2124">4</text></g><g transform="translate(970.4,1476.6)"><path d="M12,-46 H78 a14,14 0 0 1 14,14 V-32 a14,14 0 0 1 -14,14 H12 Z" fill="#fff" stroke="#d8d8d8" stroke-width="1"/><text x="28" y="-28" font-family="Pretendard,Pretendard GOV,sans-serif" font-size="12" font-weight="700" fill="#234178" letter-spacing="0.24">5번 정류장</text><path d="M0,0 C-8,-15 -21,-20 -21,-32 A21,21 0 1 1 21,-32 C21,-20 8,-15 0,0 Z" fill="#06A85B" filter="url(#pin-glow)"/><circle cx="0" cy="-32" r="16" fill="#fff"/><text x="0" y="-26" text-anchor="middle" font-family="Pretendard GOV,sans-serif" font-size="17" font-weight="700" fill="#1e2124">5</text></g><g transform="translate(1506.6,1916.7)"><path d="M12,-46 H78 a14,14 0 0 1 14,14 V-32 a14,14 0 0 1 -14,14 H12 Z" fill="#fff" stroke="#d8d8d8" stroke-width="1"/><text x="28" y="-28" font-family="Pretendard,Pretendard GOV,sans-serif" font-size="12" font-weight="700" fill="#234178" letter-spacing="0.24">6번 정류장</text><path d="M0,0 C-8,-15 -21,-20 -21,-32 A21,21 0 1 1 21,-32 C21,-20 8,-15 0,0 Z" fill="#06A85B" filter="url(#pin-glow)"/><circle cx="0" cy="-32" r="16" fill="#fff"/><text x="0" y="-26" text-anchor="middle" font-family="Pretendard GOV,sans-serif" font-size="17" font-weight="700" fill="#1e2124">6</text></g></svg>
+    <div id="bus-modal-backdrop" class="bus-modal-backdrop" aria-hidden="true"></div>
+    <div id="bus-modal" class="bus-modal" aria-hidden="true">
+      <div class="bus-modal__head">
+        <span class="bus-modal__title">DRT 운행정보</span>
+        <span class="bus-modal__badge"><i></i>운행중</span>
+      </div>
+      <div class="bus-modal__body">
+        <div class="bus-modal__cols">
+          <div class="bus-modal__labels">
+            <p>노선 :</p>
+            <p>정류장 :</p>
+            <p>차량 :</p>
+          </div>
+          <div class="bus-modal__values">
+            <p>광명역세권 순환</p>
+            <p><b>6</b><span> 개</span></p>
+            <p><b>2</b><span> 대</span></p>
+          </div>
+        </div>
+        <div class="bus-modal__foot">
+          <span>상세보기</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 6 L15 12 L9 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <script src="./js/buildingInteraction.js?v=80"></script>
 
     <!-- React 앱(부모)으로 네비게이션 전달: iframe 내부 메뉴 클릭 → 부모 라우팅 -->
     <script>

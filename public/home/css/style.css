@@ -241,6 +241,126 @@ button {
   cursor: pointer;
 }
 
+/* ── Bus click modal — DRT 운행정보 (Figma 1925:46527) ── */
+/* 전체 화면 딤 (클릭 시 닫힘) */
+.bus-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 8998;
+  display: none;
+  background: rgba(0, 0, 0, 0.55);
+}
+.bus-modal-backdrop.is-on { display: block; }
+/* active 버스+핀을 딤 위로 정확한 모양 그대로 복제해 띄우는 오버레이 SVG */
+.bus-modal-cutout {
+  position: fixed;
+  z-index: 8999;
+  pointer-events: none;
+  visibility: hidden;   /* 활성 그룹만 visible 로 되살림 */
+}
+/* 버스 노선도 오버레이 (도로 따라 형광 점선 + 정류장) */
+.bus-route-ovl {
+  position: fixed;
+  z-index: 8999;
+  pointer-events: none;
+  display: none;
+}
+.bus-route-ovl.is-on { display: block; }
+.bus-route-line {
+  animation: busRouteDash 1s linear infinite;   /* 점선이 진행 방향으로 흐름 */
+}
+@keyframes busRouteDash { to { stroke-dashoffset: -30; } }  /* 대시 10 + 간격 20 = 주기 30 */
+.bus-modal {
+  position: fixed;
+  z-index: 9000;
+  width: 188px;
+  box-sizing: border-box;
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 17px;
+  background: #fff;
+  border: 1px solid #e6e8ea;
+  border-radius: 8px;
+  box-shadow: 0 4px 5px rgba(0, 0, 0, 0.25);
+  font-family: "Pretendard GOV", "Pretendard", sans-serif;
+  pointer-events: auto;
+}
+.bus-modal.is-on { display: flex; }
+.bus-modal__foot { cursor: pointer; }
+.bus-modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 32px;
+  border-bottom: 1px solid #d6e0eb;
+}
+.bus-modal__title {
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #234178;
+}
+.bus-modal__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 1000px;
+  background: #eaf6ec;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 1.1;
+  color: #06a85b;
+}
+.bus-modal__badge i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #06a85b;
+}
+.bus-modal__body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.bus-modal__cols {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #1e2124;
+}
+.bus-modal__labels {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-weight: 400;
+}
+.bus-modal__values {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: right;
+}
+.bus-modal__values p { margin: 0; }
+.bus-modal__labels p { margin: 0; }
+.bus-modal__values b { font-weight: 700; font-size: 14px; }
+.bus-modal__values span { font-size: 12px; }
+.bus-modal__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 21px;
+}
+.bus-modal__foot span {
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #0c8ae5;
+}
+.bus-modal__foot svg { color: #0c8ae5; }
+
 .bldg-hover-img {
   position: absolute;
   z-index: 1;

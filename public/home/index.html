@@ -1230,6 +1230,85 @@
 
     <script src="./js/buildingInteraction.js?v=83"></script>
 
+    <!-- 시정소식 슬라이더: 5개 소식 자동 슬라이드(3초) + 이전/다음/일시정지 -->
+    <script>
+      (function () {
+        var NEWS = [
+          '광명시, 탄소중립 실천 경제 활성화',
+          '광명시, 수요응답형 교통(DRT) 운행 노선 확대',
+          '광명시, AI 기반 스마트 안전망 강화',
+          '광명 스마트데이터포털, 개방 데이터셋 500종 돌파',
+          '광명시, 공유 자전거·스쿠터(BSS) 거점 확대'
+        ];
+        var INTERVAL = 4000;
+        function init() {
+          var sec = document.querySelector('.gm2-news');
+          if (!sec) return;
+          var lead = sec.querySelector('.gm2-news__lead');
+          var subs = sec.querySelectorAll('.gm2-news__sub');
+          var countB = sec.querySelector('.gm2-news__count b');
+          var btns = sec.querySelectorAll('.gm2-news__ctrl button');
+          var prevBtn = btns[0], nextBtn = btns[1];
+          var pauseBtn = sec.querySelector('.js-pause');
+          var n = NEWS.length, i = 0, timer = null, paused = false;
+          var pauseHTML = pauseBtn ? pauseBtn.innerHTML : '';
+          var playHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
+
+          // 헤드라인 + 서브(내용)를 한 트랙으로 묶어 '함께' 가로 슬라이드
+          var ROLL = 200, first = true, track = null;
+          var subsArr = Array.prototype.slice.call(subs);
+          if (lead) {
+            var clip = document.createElement('span');
+            clip.style.cssText = 'display:inline-flex;flex:none;align-items:center;overflow:hidden;height:24px;';
+            track = document.createElement('span');
+            track.style.cssText = 'display:inline-flex;align-items:center;gap:14px;white-space:nowrap;will-change:transform;';
+            lead.parentNode.insertBefore(clip, lead);
+            track.appendChild(lead);                       // lead + subs를 같은 트랙으로 이동
+            subsArr.forEach(function (s) { track.appendChild(s); });
+            clip.appendChild(track);
+            lead.style.lineHeight = '24px';
+            track.style.transform = 'translateX(0)';
+          }
+          function setTexts() {
+            if (lead) lead.textContent = NEWS[i];
+            if (subsArr[0]) subsArr[0].textContent = '· ' + NEWS[(i + 1) % n];
+            if (subsArr[1]) subsArr[1].textContent = '· ' + NEWS[(i + 2) % n];
+            if (countB) countB.textContent = ('0' + (i + 1)).slice(-2);
+          }
+          function render() {
+            if (!track) { setTexts(); return; }
+            if (first) { first = false; setTexts(); return; }
+            track.style.transition = 'transform ' + ROLL + 'ms ease';
+            track.style.transform = 'translateX(-100%)';         // 헤드라인+내용이 함께 왼쪽으로 빠짐
+            setTimeout(function () {
+              setTexts();
+              track.style.transition = 'none';
+              track.style.transform = 'translateX(100%)';        // 오른쪽에 대기
+              void track.offsetWidth;                             // reflow 강제
+              track.style.transition = 'transform ' + ROLL + 'ms ease';
+              track.style.transform = 'translateX(0)';           // 함께 오른쪽에서 진입
+            }, ROLL);
+          }
+          function go(d) { i = (i + d + n) % n; render(); }
+          function stop() { if (timer) { clearInterval(timer); timer = null; } }
+          function start() { stop(); if (!paused) timer = setInterval(function () { go(1); }, INTERVAL); }
+
+          if (prevBtn) prevBtn.addEventListener('click', function () { go(-1); start(); });
+          if (nextBtn) nextBtn.addEventListener('click', function () { go(1); start(); });
+          if (pauseBtn) pauseBtn.addEventListener('click', function () {
+            paused = !paused;
+            if (paused) { stop(); pauseBtn.innerHTML = playHTML; pauseBtn.setAttribute('aria-label', '슬라이드 재생'); }
+            else { pauseBtn.innerHTML = pauseHTML; pauseBtn.setAttribute('aria-label', '슬라이드 일시 정지'); start(); }
+          });
+
+          render();
+          start();
+        }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+        else init();
+      })();
+    </script>
+
     <!-- React 앱(부모)으로 네비게이션 전달: iframe 내부 메뉴 클릭 → 부모 라우팅 -->
     <script>
       (function () {

@@ -291,6 +291,16 @@
     return info.a[iy * info.w + ix] > ALPHA_THRESHOLD;
   }
 
+  // 건물 zone 아래에 클릭 가능한 마커(버스/오토바이/핀)가 있는지 — 있으면 커서 포인터 유지
+  function markerBeneath(x, y) {
+    var els = document.elementsFromPoint(x, y);
+    for (var i = 0; i < els.length; i++) {
+      var el = els[i];
+      if (el && el.closest && el.closest('.lt-bus, .lt-vehicle, .lt-pinhover')) return true;
+    }
+    return false;
+  }
+
   document.querySelectorAll('.bldg-zone').forEach(function (zone) {
     var key = zone.dataset.building;
     var info = BUILDINGS[key];
@@ -301,14 +311,21 @@
     zone.addEventListener('mousemove', function (e) {
       if (overlay.classList.contains('is-open')) return;
       var hit = onBuilding(key, e.clientX, e.clientY);
-      if (hit && !hovering) {
-        hovering = true; zone.style.cursor = 'pointer';
-        startHoverEffect(zone, info);
-        showTooltip(info, 'building', null, true);
-      } else if (!hit && hovering) {
-        hovering = false; zone.style.cursor = 'default';
-        stopHoverEffect();
-        hideTooltip();
+      if (hit) {
+        if (!hovering) {
+          hovering = true;
+          startHoverEffect(zone, info);
+          showTooltip(info, 'building', null, true);
+        }
+        zone.style.cursor = 'pointer';
+      } else {
+        if (hovering) {
+          hovering = false;
+          stopHoverEffect();
+          hideTooltip();
+        }
+        // 건물 모양 밖이라도 그 아래 마커가 있으면 포인터 유지(클릭 가능 표시)
+        zone.style.cursor = markerBeneath(e.clientX, e.clientY) ? 'pointer' : 'default';
       }
     });
 

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>광명 스마트데이터포털 ECOVIEW</title>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.min.css" />
-    <link rel="stylesheet" href="./css/style.css?v=3" />
+    <link rel="stylesheet" href="./css/style.css?v=7" />
     <link rel="stylesheet" href="./css/gm2.css?v=2" />
   </head>
   <body>
@@ -878,7 +878,7 @@
         renderer: 'svg',
         loop: true,
         autoplay: true,
-        path: './data.json?v=8',
+        path: './data.json?v=10',
         rendererSettings: {
           preserveAspectRatio: 'xMidYMid slice'
         }
@@ -940,10 +940,12 @@
       /* 버스 클릭 → DRT 운행정보 모달 (Figma 1925:46527). 모달은 버스를 따라다님.
          모달 마크업이 이 스크립트보다 뒤에 있으므로 DOMContentLoaded 이후 실행. */
       document.addEventListener('DOMContentLoaded', function () {
-        var modal = document.getElementById('bus-modal');
+        var modal = document.getElementById('bus-modal');          // 버스: DRT 운행정보
+        var bssModal = document.getElementById('bss-card');        // 오토바이: BSS 위치정보
         var backdrop = document.getElementById('bus-modal-backdrop');
         var routeOvl = document.getElementById('bus-route-ovl');   // 노선도 오버레이
         if (!modal) return;
+        var activeModal = modal;     // 현재 열린 카드(버스/오토바이에 따라 분기)
         var buses = [];
         var activeBus = null;
         var cutout = null;            // active 마커 복제 오버레이(SVG)
@@ -1014,51 +1016,80 @@
           routeOvl.style.left = r.left + 'px'; routeOvl.style.top = r.top + 'px';
           routeOvl.style.width = r.width + 'px'; routeOvl.style.height = r.height + 'px';
         }
+        // 정류장/공유거점 라벨 칩: 텍스트 실제 길이에 맞춰 좌·우 "보이는" 여백 16px 일괄 적용.
+        // 핀(풍선 반경 21)이 칩 좌측을 덮으므로, 좌측은 풍선 우단(21)→텍스트 16,
+        // 우측은 텍스트 끝→칩 우단(코너 반경 14 포함) 16 으로 균형 맞춤.
+        var CHIP_PAD = 16, BALLOON_R = 21, CHIP_CORNER = 14;
+        var CHIP_TEXT_X = BALLOON_R + CHIP_PAD - 4;  // 33 — 라벨을 핀 쪽으로 4px 이동
+        function fitChips() {
+          if (!routeOvl) return;
+          var sel = routeOvl.classList.contains('is-bss') ? '.route-pins--bss' : '.route-pins--bus';
+          var grp = routeOvl.querySelector(sel); if (!grp) return;
+          Array.prototype.forEach.call(grp.querySelectorAll('g'), function (g) {
+            var chip = g.querySelector('path');   // 첫 path = 칩 배경
+            var label = g.querySelector('text');  // 첫 text = 라벨
+            if (!chip || !label) return;
+            var L = label.getComputedTextLength(); if (!L) return;
+            label.setAttribute('x', CHIP_TEXT_X);                       // 핀과 16 간격
+            var rx = (CHIP_TEXT_X + L + CHIP_PAD) - CHIP_CORNER;        // 우단(코너 포함) = 텍스트끝 + 16
+            chip.setAttribute('d', 'M12,-46 H' + rx.toFixed(1) + ' a14,14 0 0 1 14,14 V-32 a14,14 0 0 1 -14,14 H12 Z');
+          });
+        }
         function position() {
           if (!activeBus) return;
           positionCutout();
           positionRouteOvl();
           var ar = activeRect();
-          var mw = modal.offsetWidth, mh = modal.offsetHeight;
+          var mw = activeModal.offsetWidth, mh = activeModal.offsetHeight;
           var left = (ar.left + ar.right) / 2 - mw / 2;
           var top = ar.top - mh - 10;                // 마커 위쪽
           if (top < 8) top = ar.bottom + 10;         // 위 공간 부족하면 아래쪽
           left = Math.max(8, Math.min(left, window.innerWidth - mw - 8));
           top = Math.max(8, Math.min(top, window.innerHeight - mh - 8));
-          modal.style.left = left + 'px';
-          modal.style.top = top + 'px';
+          activeModal.style.left = left + 'px';
+          activeModal.style.top = top + 'px';
+        }
+        // 클릭한 마커가 오토바이(공유 모빌리티)인지 — 본인 또는 짝이 lt-scooter
+        function isScooter(bus) {
+          if (bus.classList && bus.classList.contains('lt-scooter')) return true;
+          var p = pairOf(bus);
+          return !!(p && p.classList && p.classList.contains('lt-scooter'));
         }
         function open(bus) {
           activeBus = bus;
+          var scooter = bssModal && isScooter(bus);
+          activeModal = scooter ? bssModal : modal;  // 오토바이→BSS, 버스→DRT
           window.__busModalOpen = true;             // 지도 애니메이션 즉시 정지(복제 정합)
-          modal.classList.add('is-on'); modal.setAttribute('aria-hidden', 'false');
+          activeModal.classList.add('is-on'); activeModal.setAttribute('aria-hidden', 'false');
           if (backdrop) { backdrop.classList.add('is-on'); backdrop.setAttribute('aria-hidden', 'false'); }
-          if (routeOvl) { routeOvl.classList.add('is-on'); routeOvl.setAttribute('aria-hidden', 'false'); positionRouteOvl(); }
-          requestAnimationFrame(function () { buildCutout(); position(); }); // 정지 1프레임 후 스냅샷
+          if (routeOvl) { routeOvl.classList.toggle('is-bss', !!scooter); routeOvl.classList.add('is-on'); routeOvl.setAttribute('aria-hidden', 'false'); positionRouteOvl(); }
+          requestAnimationFrame(function () { buildCutout(); position(); fitChips(); }); // 정지 1프레임 후 스냅샷
           position();
         }
         function close() {
           activeBus = null;
           window.__busModalOpen = false;            // 지도 애니메이션 재개
           removeCutout();
-          modal.classList.remove('is-on'); modal.setAttribute('aria-hidden', 'true');
+          activeModal.classList.remove('is-on'); activeModal.setAttribute('aria-hidden', 'true');
           if (backdrop) { backdrop.classList.remove('is-on'); backdrop.setAttribute('aria-hidden', 'true'); }
           if (routeOvl) { routeOvl.classList.remove('is-on'); routeOvl.setAttribute('aria-hidden', 'true'); }
         }
         // 마커 클릭 → 열기 / 바깥 클릭 → 닫기 (모달 내부 클릭은 유지)
         document.addEventListener('click', function (e) {
-          if (modal.contains(e.target)) return;
+          if (modal.contains(e.target) || (bssModal && bssModal.contains(e.target))) return;
           if (activeBus) { if (!busAt(e.clientX, e.clientY)) close(); return; }
           var bus = busAt(e.clientX, e.clientY);
           if (bus) open(bus);
         });
-        // 상세보기 → 모빌리티 데이터 지도로 이동
-        modal.querySelector('.bus-modal__foot').addEventListener('click', function () {
+        // 상세보기 → 모빌리티 데이터 지도로 이동 (버스/오토바이 공통)
+        function gotoMobility() {
           if (window.parent !== window) {
             window.parent.postMessage({ type: 'gm-navigate', page: 'map', mile: 'mobility' }, '*');
           }
           close();
-        });
+        }
+        modal.querySelector('.bus-modal__foot').addEventListener('click', gotoMobility);
+        if (bssModal) { var bf = bssModal.querySelector('.bss-card__foot'); if (bf) bf.addEventListener('click', gotoMobility); }
         // 버스가 움직이는 동안 모달이 따라가도록 매 프레임 위치 갱신
         (function follow() { if (activeBus) position(); window.requestAnimationFrame(follow); })();
 
@@ -1144,7 +1175,7 @@
     </div>
 
     <!-- Bus click modal — DRT 운행정보 (Figma 1925:46527) -->
-    <svg id="bus-route-ovl" class="bus-route-ovl" viewBox="0 0 1920 3139" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><filter id="bus-route-glow" x="-100%" y="-100%" width="300%" height="300%"><feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#5BFFA6" flood-opacity="1"/><feDropShadow dx="0" dy="0" stdDeviation="9" flood-color="#16D26E" flood-opacity="0.95"/><feDropShadow dx="0" dy="0" stdDeviation="22" flood-color="#06A85B" flood-opacity="0.85"/></filter><filter id="pin-glow" x="-120%" y="-120%" width="340%" height="340%"><feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#06A85B" flood-opacity="0.9"/><feDropShadow dx="0" dy="0" stdDeviation="9" flood-color="#06A85B" flood-opacity="0.6"/></filter></defs><path d="M592.5,317.0 C592.5,317.0 631.0,401.0 648.0,416.0 C719.5,476.0 734.4,447.4 753.8,503.0 C770.8,518.0 809.9,602.3 809.9,602.3 C819.9,631.0 898.9,620.0 889.1,665.1 C889.1,665.1 948.2,693.9 935.8,735.3 C926.0,780.4 903.8,776.5 898.0,839.2 C885.6,880.6 829.5,945.3 861.5,983.8 C855.6,1046.5 889.7,1114.3 908.4,1129.1 C940.4,1167.7 1017.8,1183.9 1023.8,1235.9 C1042.6,1250.8 1126.5,1306.8 1097.8,1327.0 C1101.7,1361.0 1029.2,1346.6 1032.5,1389.1 C1003.8,1409.3 919.5,1441.3 970.4,1476.6 C973.7,1519.0 1022.7,1561.5 1022.7,1561.5 C1073.6,1596.7 1506.6,1916.7 1506.6,1916.7" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" stroke-dasharray="10 20" filter="url(#bus-route-glow)" class="bus-route-line"/><g transform="translate(592.5,317.0)"><path d="M12,-46 H78 a14,14 0 0 1 14,14 V-32 a14,14 0 0 1 -14,14 H12 Z" fill="#fff" stroke="#d8d8d8" stroke-width="1"/><text x="28" y="-28" font-family="Pretendard,Pretendard GOV,sans-serif" font-size="12" font-weight="700" fill="#234178" letter-spacing="0.24">1번 정류장</text><path d="M0,0 C-8,-15 -21,-20 -21,-32 A21,21 0 1 1 21,-32 C21,-20 8,-15 0,0 Z" fill="#06A85B" filter="url(#pin-glow)"/><circle cx="0" cy="-32" r="16" fill="#fff"/><text x="0" y="-26" text-anchor="middle" font-family="Pretendard GOV,sans-serif" font-size="17" font-weight="700" fill="#1e2124">1</text></g><g transform="translate(809.9,602.3)"><path d="M12,-46 H78 a14,14 0 0 1 14,14 V-32 a14,14 0 0 1 -14,14 H12 Z" fill="#fff" stroke="#d8d8d8" stroke-width="1"/><text x="28" y="-28" font-family="Pretendard,Pretendard GOV,sans-serif" font-size="12" font-weight="700" fill="#234178" letter-spacing="0.24">2번 정류장</text><path d="M0,0 C-8,-15 -21,-20 -21,-32 A21,21 0 1 1 21,-32 C21,-20 8,-15 0,0 Z" fill="#06A85B" filter="url(#pin-glow)"/><circle cx="0" cy="-32" r="16" fill="#fff"/><text x="0" y="-26" text-anchor="middle" font-family="Pretendard GOV,sans-serif" font-size="17" font-weight="700" fill="#1e2124">2</text></g><g transform="translate(898.0,839.2)"><path d="M12,-46 H78 a14,14 0 0 1 14,14 V-32 a14,14 0 0 1 -14,14 H12 Z" fill="#fff" stroke="#d8d8d8" stroke-width="1"/><text x="28" y="-28" font-family="Pretendard,Pretendard GOV,sans-serif" font-size="12" font-weight="700" fill="#234178" letter-spacing="0.24">3번 정류장</text><path d="M0,0 C-8,-15 -21,-20 -21,-32 A21,21 0 1 1 21,-32 C21,-20 8,-15 0,0 Z" fill="#06A85B" filter="url(#pin-glow)"/><circle cx="0" cy="-32" r="16" fill="#fff"/><text x="0" y="-26" text-anchor="middle" font-family="Pretendard GOV,sans-serif" font-size="17" font-weight="700" fill="#1e2124">3</text></g><g transform="translate(1023.8,1235.9)"><path d="M12,-46 H78 a14,14 0 0 1 14,14 V-32 a14,14 0 0 1 -14,14 H12 Z" fill="#fff" stroke="#d8d8d8" stroke-width="1"/><text x="28" y="-28" font-family="Pretendard,Pretendard GOV,sans-serif" font-size="12" font-weight="700" fill="#234178" letter-spacing="0.24">4번 정류장</text><path d="M0,0 C-8,-15 -21,-20 -21,-32 A21,21 0 1 1 21,-32 C21,-20 8,-15 0,0 Z" fill="#06A85B" filter="url(#pin-glow)"/><circle cx="0" cy="-32" r="16" fill="#fff"/><text x="0" y="-26" text-anchor="middle" font-family="Pretendard GOV,sans-serif" font-size="17" font-weight="700" fill="#1e2124">4</text></g><g transform="translate(970.4,1476.6)"><path d="M12,-46 H78 a14,14 0 0 1 14,14 V-32 a14,14 0 0 1 -14,14 H12 Z" fill="#fff" stroke="#d8d8d8" stroke-width="1"/><text x="28" y="-28" font-family="Pretendard,Pretendard GOV,sans-serif" font-size="12" font-weight="700" fill="#234178" letter-spacing="0.24">5번 정류장</text><path d="M0,0 C-8,-15 -21,-20 -21,-32 A21,21 0 1 1 21,-32 C21,-20 8,-15 0,0 Z" fill="#06A85B" filter="url(#pin-glow)"/><circle cx="0" cy="-32" r="16" fill="#fff"/><text x="0" y="-26" text-anchor="middle" font-family="Pretendard GOV,sans-serif" font-size="17" font-weight="700" fill="#1e2124">5</text></g><g transform="translate(1506.6,1916.7)"><path d="M12,-46 H78 a14,14 0 0 1 14,14 V-32 a14,14 0 0 1 -14,14 H12 Z" fill="#fff" stroke="#d8d8d8" stroke-width="1"/><text x="28" y="-28" font-family="Pretendard,Pretendard GOV,sans-serif" font-size="12" font-weight="700" fill="#234178" letter-spacing="0.24">6번 정류장</text><path d="M0,0 C-8,-15 -21,-20 -21,-32 A21,21 0 1 1 21,-32 C21,-20 8,-15 0,0 Z" fill="#06A85B" filter="url(#pin-glow)"/><circle cx="0" cy="-32" r="16" fill="#fff"/><text x="0" y="-26" text-anchor="middle" font-family="Pretendard GOV,sans-serif" font-size="17" font-weight="700" fill="#1e2124">6</text></g></svg>
+    <svg id="bus-route-ovl" class="bus-route-ovl" viewBox="0 0 1920 3139" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><filter id="bus-route-glow" x="-100%" y="-100%" width="300%" height="300%"><feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#5BFFA6" flood-opacity="1"/><feDropShadow dx="0" dy="0" stdDeviation="9" flood-color="#16D26E" flood-opacity="0.95"/><feDropShadow dx="0" dy="0" stdDeviation="22" flood-color="#06A85B" flood-opacity="0.85"/></filter><filter id="pin-glow" x="-120%" y="-120%" width="340%" height="340%"><feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#06A85B" flood-opacity="0.9"/><feDropShadow dx="0" dy="0" stdDeviation="9" flood-color="#06A85B" flood-opacity="0.6"/></filter><filter id="pin-glow-blue" x="-120%" y="-120%" width="340%" height="340%"><feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#0c8ae5" flood-opacity="0.9"/><feDropShadow dx="0" dy="0" stdDeviation="9" flood-color="#0c8ae5" flood-opacity="0.6"/></filter></defs><path d="M592.5,317.0 C592.5,317.0 631.0,401.0 648.0,416.0 C719.5,476.0 734.4,447.4 753.8,503.0 C770.8,518.0 809.9,602.3 809.9,602.3 C819.9,631.0 898.9,620.0 889.1,665.1 C889.1,665.1 948.2,693.9 935.8,735.3 C926.0,780.4 903.8,776.5 898.0,839.2 C885.6,880.6 829.5,945.3 861.5,983.8 C855.6,1046.5 889.7,1114.3 908.4,1129.1 C940.4,1167.7 1017.8,1183.9 1023.8,1235.9 C1042.6,1250.8 1126.5,1306.8 1097.8,1327.0 C1101.7,1361.0 1029.2,1346.6 1032.5,1389.1 C1003.8,1409.3 919.5,1441.3 970.4,1476.6 C973.7,1519.0 1022.7,1561.5 1022.7,1561.5 C1073.6,1596.7 1506.6,1916.7 1506.6,1916.7" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" stroke-dasharray="10 20" filter="url(#bus-route-glow)" class="bus-route-line"/><g class="route-pins route-pins--bus"><g transform="translate(592.5,317)"><path d="M12,-46 H78 a14,14 0 0 1 14,14 V-32 a14,14 0 0 1 -14,14 H12 Z" fill="#fff" stroke="#d8d8d8" stroke-width="1"/><text x="28" y="-28" font-family="Pretendard,Pretendard GOV,sans-serif" font-size="12" font-weight="700" fill="#234178" letter-spacing="0.24">1번 정류장</text><path d="M0,0 C-8,-15 -21,-20 -21,-32 A21,21 0 1 1 21,-32 C21,-20 8,-15 0,0 Z" fill="#06A85B" filter="url(#pin-glow)"/><circle cx="0" cy="-32" r="16" fill="#fff"/><text x="0" y="-26" text-anchor="middle" font-family="Pretendard GOV,sans-serif" font-size="17" font-weight="700" fill="#1e2124">1</text></g><g transform="translate(809.9,602.3)"><path d="M12,-46 H78 a14,14 0 0 1 14,14 V-32 a14,14 0 0 1 -14,14 H12 Z" fill="#fff" stroke="#d8d8d8" stroke-width="1"/><text x="28" y="-28" font-family="Pretendard,Pretendard GOV,sans-serif" font-size="12" font-weight="700" fill="#234178" letter-spacing="0.24">2번 정류장</text><path d="M0,0 C-8,-15 -21,-20 -21,-32 A21,21 0 1 1 21,-32 C21,-20 8,-15 0,0 Z" fill="#06A85B" filter="url(#pin-glow)"/><circle cx="0" cy="-32" r="16" fill="#fff"/><text x="0" y="-26" text-anchor="middle" font-family="Pretendard GOV,sans-serif" font-size="17" font-weight="700" fill="#1e2124">2</text></g><g transform="translate(898,839.2)"><path d="M12,-46 H78 a14,14 0 0 1 14,14 V-32 a14,14 0 0 1 -14,14 H12 Z" fill="#fff" stroke="#d8d8d8" stroke-width="1"/><text x="28" y="-28" font-family="Pretendard,Pretendard GOV,sans-serif" font-size="12" font-weight="700" fill="#234178" letter-spacing="0.24">3번 정류장</text><path d="M0,0 C-8,-15 -21,-20 -21,-32 A21,21 0 1 1 21,-32 C21,-20 8,-15 0,0 Z" fill="#06A85B" filter="url(#pin-glow)"/><circle cx="0" cy="-32" r="16" fill="#fff"/><text x="0" y="-26" text-anchor="middle" font-family="Pretendard GOV,sans-serif" font-size="17" font-weight="700" fill="#1e2124">3</text></g><g transform="translate(1023.8,1235.9)"><path d="M12,-46 H78 a14,14 0 0 1 14,14 V-32 a14,14 0 0 1 -14,14 H12 Z" fill="#fff" stroke="#d8d8d8" stroke-width="1"/><text x="28" y="-28" font-family="Pretendard,Pretendard GOV,sans-serif" font-size="12" font-weight="700" fill="#234178" letter-spacing="0.24">4번 정류장</text><path d="M0,0 C-8,-15 -21,-20 -21,-32 A21,21 0 1 1 21,-32 C21,-20 8,-15 0,0 Z" fill="#06A85B" filter="url(#pin-glow)"/><circle cx="0" cy="-32" r="16" fill="#fff"/><text x="0" y="-26" text-anchor="middle" font-family="Pretendard GOV,sans-serif" font-size="17" font-weight="700" fill="#1e2124">4</text></g><g transform="translate(970.4,1476.6)"><path d="M12,-46 H78 a14,14 0 0 1 14,14 V-32 a14,14 0 0 1 -14,14 H12 Z" fill="#fff" stroke="#d8d8d8" stroke-width="1"/><text x="28" y="-28" font-family="Pretendard,Pretendard GOV,sans-serif" font-size="12" font-weight="700" fill="#234178" letter-spacing="0.24">5번 정류장</text><path d="M0,0 C-8,-15 -21,-20 -21,-32 A21,21 0 1 1 21,-32 C21,-20 8,-15 0,0 Z" fill="#06A85B" filter="url(#pin-glow)"/><circle cx="0" cy="-32" r="16" fill="#fff"/><text x="0" y="-26" text-anchor="middle" font-family="Pretendard GOV,sans-serif" font-size="17" font-weight="700" fill="#1e2124">5</text></g><g transform="translate(1506.6,1916.7)"><path d="M12,-46 H78 a14,14 0 0 1 14,14 V-32 a14,14 0 0 1 -14,14 H12 Z" fill="#fff" stroke="#d8d8d8" stroke-width="1"/><text x="28" y="-28" font-family="Pretendard,Pretendard GOV,sans-serif" font-size="12" font-weight="700" fill="#234178" letter-spacing="0.24">6번 정류장</text><path d="M0,0 C-8,-15 -21,-20 -21,-32 A21,21 0 1 1 21,-32 C21,-20 8,-15 0,0 Z" fill="#06A85B" filter="url(#pin-glow)"/><circle cx="0" cy="-32" r="16" fill="#fff"/><text x="0" y="-26" text-anchor="middle" font-family="Pretendard GOV,sans-serif" font-size="17" font-weight="700" fill="#1e2124">6</text></g></g><g class="route-pins route-pins--bss"><g transform="translate(592.5,317)"><path d="M12,-46 H94 a14,14 0 0 1 14,14 V-32 a14,14 0 0 1 -14,14 H12 Z" fill="#fff" stroke="#d8d8d8" stroke-width="1"/><text x="28" y="-28" font-family="Pretendard,Pretendard GOV,sans-serif" font-size="12" font-weight="700" fill="#234178" letter-spacing="0.24">공유거점 1</text><path d="M0,0 C-8,-15 -21,-20 -21,-32 A21,21 0 1 1 21,-32 C21,-20 8,-15 0,0 Z" fill="#0c8ae5" filter="url(#pin-glow-blue)"/><circle cx="0" cy="-32" r="16" fill="#fff"/><text x="0" y="-28.5" text-anchor="middle" font-family="Pretendard GOV,sans-serif" font-size="11" font-weight="700" fill="#131416">BSS</text></g><g transform="translate(809.9,602.3)"><path d="M12,-46 H94 a14,14 0 0 1 14,14 V-32 a14,14 0 0 1 -14,14 H12 Z" fill="#fff" stroke="#d8d8d8" stroke-width="1"/><text x="28" y="-28" font-family="Pretendard,Pretendard GOV,sans-serif" font-size="12" font-weight="700" fill="#234178" letter-spacing="0.24">공유거점 2</text><path d="M0,0 C-8,-15 -21,-20 -21,-32 A21,21 0 1 1 21,-32 C21,-20 8,-15 0,0 Z" fill="#0c8ae5" filter="url(#pin-glow-blue)"/><circle cx="0" cy="-32" r="16" fill="#fff"/><text x="0" y="-28.5" text-anchor="middle" font-family="Pretendard GOV,sans-serif" font-size="11" font-weight="700" fill="#131416">BSS</text></g><g transform="translate(898,839.2)"><path d="M12,-46 H94 a14,14 0 0 1 14,14 V-32 a14,14 0 0 1 -14,14 H12 Z" fill="#fff" stroke="#d8d8d8" stroke-width="1"/><text x="28" y="-28" font-family="Pretendard,Pretendard GOV,sans-serif" font-size="12" font-weight="700" fill="#234178" letter-spacing="0.24">공유거점 3</text><path d="M0,0 C-8,-15 -21,-20 -21,-32 A21,21 0 1 1 21,-32 C21,-20 8,-15 0,0 Z" fill="#0c8ae5" filter="url(#pin-glow-blue)"/><circle cx="0" cy="-32" r="16" fill="#fff"/><text x="0" y="-28.5" text-anchor="middle" font-family="Pretendard GOV,sans-serif" font-size="11" font-weight="700" fill="#131416">BSS</text></g><g transform="translate(1023.8,1235.9)"><path d="M12,-46 H94 a14,14 0 0 1 14,14 V-32 a14,14 0 0 1 -14,14 H12 Z" fill="#fff" stroke="#d8d8d8" stroke-width="1"/><text x="28" y="-28" font-family="Pretendard,Pretendard GOV,sans-serif" font-size="12" font-weight="700" fill="#234178" letter-spacing="0.24">공유거점 4</text><path d="M0,0 C-8,-15 -21,-20 -21,-32 A21,21 0 1 1 21,-32 C21,-20 8,-15 0,0 Z" fill="#0c8ae5" filter="url(#pin-glow-blue)"/><circle cx="0" cy="-32" r="16" fill="#fff"/><text x="0" y="-28.5" text-anchor="middle" font-family="Pretendard GOV,sans-serif" font-size="11" font-weight="700" fill="#131416">BSS</text></g><g transform="translate(970.4,1476.6)"><path d="M12,-46 H94 a14,14 0 0 1 14,14 V-32 a14,14 0 0 1 -14,14 H12 Z" fill="#fff" stroke="#d8d8d8" stroke-width="1"/><text x="28" y="-28" font-family="Pretendard,Pretendard GOV,sans-serif" font-size="12" font-weight="700" fill="#234178" letter-spacing="0.24">공유거점 5</text><path d="M0,0 C-8,-15 -21,-20 -21,-32 A21,21 0 1 1 21,-32 C21,-20 8,-15 0,0 Z" fill="#0c8ae5" filter="url(#pin-glow-blue)"/><circle cx="0" cy="-32" r="16" fill="#fff"/><text x="0" y="-28.5" text-anchor="middle" font-family="Pretendard GOV,sans-serif" font-size="11" font-weight="700" fill="#131416">BSS</text></g><g transform="translate(1506.6,1916.7)"><path d="M12,-46 H94 a14,14 0 0 1 14,14 V-32 a14,14 0 0 1 -14,14 H12 Z" fill="#fff" stroke="#d8d8d8" stroke-width="1"/><text x="28" y="-28" font-family="Pretendard,Pretendard GOV,sans-serif" font-size="12" font-weight="700" fill="#234178" letter-spacing="0.24">공유거점 6</text><path d="M0,0 C-8,-15 -21,-20 -21,-32 A21,21 0 1 1 21,-32 C21,-20 8,-15 0,0 Z" fill="#0c8ae5" filter="url(#pin-glow-blue)"/><circle cx="0" cy="-32" r="16" fill="#fff"/><text x="0" y="-28.5" text-anchor="middle" font-family="Pretendard GOV,sans-serif" font-size="11" font-weight="700" fill="#131416">BSS</text></g></g></svg>
     <div id="bus-modal-backdrop" class="bus-modal-backdrop" aria-hidden="true"></div>
     <div id="bus-modal" class="bus-modal" aria-hidden="true">
       <div class="bus-modal__head">
@@ -1171,7 +1202,33 @@
       </div>
     </div>
 
-    <script src="./js/buildingInteraction.js?v=81"></script>
+    <!-- 오토바이(공유 모빌리티) hover 카드 — BSS 위치정보 (Figma 1935:50512) -->
+    <div id="bss-card" class="bss-card" aria-hidden="true">
+      <div class="bss-card__head">
+        <span class="bss-card__title">BSS 위치정보</span>
+        <span class="bss-card__badge"><i></i>운행중</span>
+      </div>
+      <div class="bss-card__body">
+        <div class="bss-card__cols">
+          <div class="bss-card__labels">
+            <p>거점 :</p>
+            <p>주요거점 :</p>
+            <p>대여가능 :</p>
+          </div>
+          <div class="bss-card__values">
+            <p><b>6</b><span> 개</span></p>
+            <p class="bss-card__strong">광명역 BSS</p>
+            <p><b>7</b><span> 대</span></p>
+          </div>
+        </div>
+        <div class="bss-card__foot">
+          <span>상세보기</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 6 L15 12 L9 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <script src="./js/buildingInteraction.js?v=83"></script>
 
     <!-- React 앱(부모)으로 네비게이션 전달: iframe 내부 메뉴 클릭 → 부모 라우팅 -->
     <script>

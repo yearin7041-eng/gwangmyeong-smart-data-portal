@@ -236,7 +236,9 @@ button {
 }
 
 /* Lottie pin/bus layers: hover to pause the whole map animation */
-#lottie-bg .lt-pinhover {
+#lottie-bg .lt-pinhover,
+#lottie-bg .lt-bus,
+#lottie-bg .lt-vehicle {
   pointer-events: auto;
   cursor: pointer;
 }
@@ -266,6 +268,10 @@ button {
   display: none;
 }
 .bus-route-ovl.is-on { display: block; }
+/* 정류장 핀 세트: 버스=번호 정류장(녹색), 오토바이=BSS 공유거점(파랑) */
+.bus-route-ovl .route-pins--bss { display: none; }
+.bus-route-ovl.is-bss .route-pins--bus { display: none; }
+.bus-route-ovl.is-bss .route-pins--bss { display: inline; }
 .bus-route-line {
   animation: busRouteDash 1s linear infinite;   /* 점선이 진행 방향으로 흐름 */
 }
@@ -360,6 +366,99 @@ button {
   color: #0c8ae5;
 }
 .bus-modal__foot svg { color: #0c8ae5; }
+
+/* 오토바이 hover 카드 — BSS 위치정보 (Figma 1935:50512) */
+.bss-card {
+  position: fixed;
+  z-index: 9200;
+  width: 188px;
+  box-sizing: border-box;
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 17px;
+  background: #fff;
+  border: 1px solid #e6e8ea;
+  border-radius: 8px;
+  box-shadow: 0 4px 5px rgba(0, 0, 0, 0.25);
+  font-family: "Pretendard GOV", "Pretendard", sans-serif;
+  pointer-events: auto;
+}
+.bss-card.is-on { display: flex; }
+.bss-card__foot { cursor: pointer; }
+.bss-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 32px;
+  border-bottom: 1px solid #d6e0eb;
+}
+.bss-card__title {
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #234178;
+}
+.bss-card__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 1000px;
+  background: #eaf6ec;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 1.1;
+  color: #06a85b;
+}
+.bss-card__badge i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #06a85b;
+}
+.bss-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.bss-card__cols {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #1e2124;
+}
+.bss-card__labels {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-weight: 400;
+}
+.bss-card__values {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: right;
+}
+.bss-card__values p { margin: 0; }
+.bss-card__labels p { margin: 0; }
+.bss-card__values b { font-weight: 700; font-size: 14px; }
+.bss-card__values span { font-size: 12px; }
+.bss-card__strong { font-weight: 600; }
+.bss-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 21px;
+}
+.bss-card__foot span {
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #0c8ae5;
+}
+.bss-card__foot svg { color: #0c8ae5; }
 
 .bldg-hover-img {
   position: absolute;

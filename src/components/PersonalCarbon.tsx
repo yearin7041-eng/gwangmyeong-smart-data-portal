@@ -41,7 +41,7 @@ export default function PersonalCarbon() {
           {/* Card 1 */}
           <div className="gp-card p-[32px] bg-white border border-[var(--border-2)] hover:border-[var(--gp-primary)] transition-colors flex flex-col relative min-h-[180px]">
             <div className="flex items-start gap-[16px] mb-[16px]">
-              <img src="/icons/ic_community_60.svg" alt="누적 참여 활동" className="w-[60px] h-[60px] shrink-0" />
+              <img src="/icons/ic_community_flat.svg" alt="누적 참여 활동" className="w-[60px] h-[60px] shrink-0" />
               <div className="flex flex-col">
                 <span className="text-[16px] text-[#464C53] font-medium">누적 참여 활동</span>
                 <div className="flex items-baseline gap-[4px]">
@@ -59,7 +59,7 @@ export default function PersonalCarbon() {
           {/* Card 2 */}
           <div className="gp-card p-[32px] bg-white border border-[var(--border-2)] hover:border-[var(--gp-primary)] transition-colors flex flex-col relative min-h-[180px]">
             <div className="flex items-start gap-[16px] mb-[16px]">
-              <img src="/icons/ic_leaf_60.svg" alt="예상 탄소 저감량" className="w-[60px] h-[60px] shrink-0" />
+              <img src="/icons/ic_leaf_flat.svg" alt="예상 탄소 저감량" className="w-[60px] h-[60px] shrink-0" />
               <div className="flex flex-col">
                 <span className="text-[16px] text-[#464C53] font-medium">예상 탄소 저감량</span>
                 <div className="flex items-baseline gap-[4px]">
@@ -77,7 +77,7 @@ export default function PersonalCarbon() {
           {/* Card 3 */}
           <div className="gp-card p-[32px] bg-white border border-[var(--border-2)] hover:border-[var(--gp-primary)] transition-colors flex flex-col relative min-h-[180px]">
             <div className="flex items-start gap-[16px] mb-[16px]">
-              <img src="/icons/ic_calendar_60.svg" alt="이번 달 참여" className="w-[60px] h-[60px] shrink-0" />
+              <img src="/icons/ic_calendar_flat.svg" alt="이번 달 참여" className="w-[60px] h-[60px] shrink-0" />
               <div className="flex flex-col">
                 <span className="text-[16px] text-[#464C53] font-medium">이번 달 참여</span>
                 <div className="flex items-baseline gap-[4px]">
@@ -95,7 +95,7 @@ export default function PersonalCarbon() {
           {/* Card 4 */}
           <div className="gp-card p-[32px] bg-white border border-[var(--border-2)] hover:border-[var(--gp-primary)] transition-colors flex flex-col relative min-h-[180px]">
             <div className="flex items-start gap-[16px] mb-[16px]">
-              <img src="/icons/ic_link_60.svg" alt="연계 프로그램" className="w-[60px] h-[60px] shrink-0" />
+              <img src="/icons/ic_link_flat.svg" alt="연계 프로그램" className="w-[60px] h-[60px] shrink-0" />
               <div className="flex flex-col">
                 <span className="text-[16px] text-[#464C53] font-medium">연계 프로그램</span>
                 <div className="flex items-baseline gap-[4px]">

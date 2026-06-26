@@ -3324,6 +3324,8 @@ button {
 .modal[data-color="orange"] .m-slide[data-slide="1"] .sect-row {
   margin: 0 !important;
 }
+/* "맨홀·지표면 수위 변화" 제목 margin-top 제거 */
+.modal[data-color="orange"] .m-slide[data-slide="1"] .sect-row .sect-title { margin-top: 0 !important; }
 
 .modal[data-color="orange"] .m-slide[data-slide="1"] .sect-title {
   margin: 4px 0 3px;
@@ -3376,6 +3378,37 @@ button {
 .modal[data-color="purple"] .detail-row {
   border-bottom-color: #ECEEF2;
 }
+
+/* ===== 데이터 마일: 에너지 마일과 스타일 통일 (내용 유지 · 보라 테마 유지) ===== */
+/* 헤더 — 제목 24·아이콘 48·세로 가운데·ⓘ↔슬라이더 정렬 */
+.modal--data .m-header { align-items: center; gap: 10px; padding: 0 20px; min-height: 97px; }
+.modal--data .m-logo, .modal--data .m-logo img { width: 48px; height: 48px; }
+.modal--data .m-title { font-size: 24px; letter-spacing: -0.5px; }
+.modal--data .m-subtitle { margin-top: 2px; font-size: 14px; color: #464c53; letter-spacing: -0.2px; }
+.modal--data .m-info-btn { align-self: center; margin-top: 0; }
+.modal--data .m-controls { padding-top: 0; }
+/* 섹션 제목 16/600/#131416 */
+.modal[data-color="purple"] .m-slide .sect-title { font-size: 16px; font-weight: 600; color: #131416; }
+/* 슬라이드1 "분야별 데이터 개방 분포" margin-top 제거 → 콘텐츠 위로 */
+.modal[data-color="purple"] .m-slide[data-slide="1"] .sect-title { margin-top: 0 !important; }
+/* 슬라이드0 "시간대별 데이터 수집량" 행 margin */
+.modal[data-color="purple"] .m-slide[data-slide="0"] .sect-row { margin: 18px 0 10px; }
+/* 통계 박스 — 라벨14/값20 */
+.modal[data-color="purple"] .stat-label { font-size: 14px; font-weight: 600; color: #464c53; }
+.modal[data-color="purple"] .stat-value { font-size: 20px; color: var(--c); }
+.modal[data-color="purple"] .stat-value .unit { font-size: 12px; color: #8a949e; }
+.modal[data-color="purple"] .stat-foot { color: #6d7882; }
+/* 상세행(슬라이드1) — 폰트 통일, footer 하단 고정·구분선 제거 */
+.modal[data-color="purple"] .m-slide[data-slide="1"] { display: flex; flex-direction: column; }
+.modal[data-color="purple"] .m-slide[data-slide="1"] .detail-row { padding: 4px 2px; }
+.modal[data-color="purple"] .m-slide[data-slide="1"] .detail-row .ic-sm,
+.modal[data-color="purple"] .m-slide[data-slide="1"] .detail-row .ic-sm svg { width: 24px; height: 24px; }
+.modal[data-color="purple"] .m-slide[data-slide="1"] .detail-row .lbl { font-size: 13px; font-weight: 500; color: #1e2124; }
+.modal[data-color="purple"] .m-slide[data-slide="1"] .detail-row .val { font-size: 13px; font-weight: 700; color: #1e2124; }
+.modal[data-color="purple"] .m-slide[data-slide="1"] .detail-row .val .u { font-size: 13px; font-weight: 500; color: #6d7882; margin-left: 3px; }
+.modal[data-color="purple"] .m-slide[data-slide="1"] .detail-foot { margin-top: auto; border-top: none; padding-top: 0; }
+.modal[data-color="purple"] .foot-link { font-size: 14px; color: #464c53; }
+.modal[data-color="purple"] .foot-btn { font-size: 14px; font-weight: 400; }
 
 /* Landing placement overrides for imported modals */
 .modal-layer {
@@ -3981,3 +4014,17 @@ button {
   filter: brightness(0) saturate(100%) invert(42%) sepia(50%) saturate(600%) hue-rotate(213deg) brightness(108%);
 }
 
+
+/* ── 클릭 가능한 요소에 포인터 커서 (전역) ── */
+button:not(:disabled),
+a,
+label[for],
+select,
+summary,
+[role="button"]:not([aria-disabled="true"]),
+[role="tab"],
+[role="link"],
+[onclick] {
+  cursor: pointer;
+}
+button:disabled { cursor: not-allowed; }

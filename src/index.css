@@ -1129,3 +1129,23 @@ button, input, select, textarea {
   color: var(--fg-3);
 }
 
+
+/* ── 클릭 가능한 요소에 포인터 커서 (Tailwind v4는 button 기본 pointer 미적용) ── */
+button:not(:disabled),
+a,
+label[for],
+select,
+summary,
+[role="button"]:not([aria-disabled="true"]),
+[role="tab"],
+[role="link"],
+[role="menuitem"],
+[role="option"],
+[role="switch"],
+[onclick] {
+  cursor: pointer;
+}
+button:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}

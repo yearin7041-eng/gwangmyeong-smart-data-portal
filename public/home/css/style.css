@@ -2160,6 +2160,50 @@ button {
   color: var(--c);
 }
 
+/* ── 에너지 마일 카드: Figma(1946-44904 / 1952-45253) 정밀 클론 ── */
+/* 헤더 세로 가운데 정렬 + 타이틀/서브타이틀/아이콘 크기 + ⓘ·슬라이더 정렬 */
+.modal--energy .m-header { align-items: center; gap: 10px; padding: 0 20px; min-height: 97px; }
+.modal--energy .m-logo { width: 48px; height: 48px; }
+.modal--energy .m-logo img { width: 48px; height: 48px; }
+.modal--energy .m-title { font-size: 24px; letter-spacing: -0.5px; }
+.modal--energy .m-subtitle { margin-top: 2px; font-size: 14px; color: #464c53; letter-spacing: -0.2px; }
+.modal--energy .m-info-btn { align-self: center; margin-top: 0; }
+.modal--energy .m-controls { padding-top: 0; }
+
+/* ── 슬라이드 정밀 간격 (Figma 470x450, 헤더 97 기준 / 본문 353, 하단여백 20) ── */
+.modal--energy .m-slide { padding: 16px 20px 20px; }
+/* 차트 슬라이드: 통계박스 209x69·gap12, 섹션 y201, 차트 y235 h195 */
+.modal--energy .m-slide[data-slide="0"] .stat-row { gap: 12px; margin: 0; }
+.modal--energy .m-slide[data-slide="0"] .stat-card { min-height: 69px; height: 69px; }
+.modal--energy .m-slide[data-slide="0"] .sect-row { margin-top: 19px; height: 24px; }
+.modal--energy .m-slide[data-slide="0"] .chart-area { margin-top: 10px; height: 195px; }
+/* 가상거래 상세: 행 50px·gap6, footer 하단 고정(하단여백 20) */
+.modal--energy .m-slide[data-slide="1"] { display: flex; flex-direction: column; }
+.modal--energy .m-slide[data-slide="1"] .sect-title { margin-top: 0 !important; }
+.modal--energy .m-slide[data-slide="1"] .detail-list { gap: 6px; margin-top: 14px; }
+.modal--energy .m-slide[data-slide="1"] .detail-row { height: 50px; padding: 0 2px; border-bottom: 1px solid #e6e8ea; }
+.modal--energy .m-slide[data-slide="1"] .detail-foot { margin-top: auto; border-top: none; padding-top: 0; }
+
+/* 그래프 플롯 높이 정확히 155px (Figma) — 차트 상단 패딩 18 */
+.modal--energy .m-slide[data-slide="0"] .chart-area { padding: 18px 0 22px 32px; }
+.modal--energy .m-slide[data-slide="0"] .chart-grid { top: 18px; }
+.modal--energy .m-slide[data-slide="0"] .chart-y { top: 18px; }
+
+/* ── 폰트 사이즈/색상 Figma 일치 ── */
+.modal--energy .stat-label { font-size: 14px; font-weight: 600; color: #464c53; }
+.modal--energy .stat-value { font-size: 20px; color: var(--c); }
+.modal--energy .stat-value .unit { font-size: 12px; color: #8a949e; }
+.modal--energy .sect-title { font-size: 16px; font-weight: 600; color: #131416; }
+.modal--energy .sect-unit { font-size: 12px; color: #6d7882; }
+.modal--energy .chart-y { font-size: 13px; color: #6d7882; }
+.modal--energy .bar-label { font-size: 12px; color: #464c53; }
+.modal--energy .bar-val { font-size: 12px; font-weight: 600; color: #1e2124; }
+.modal--energy .detail-row .lbl { font-size: 14px; font-weight: 500; color: #1e2124; }
+.modal--energy .detail-row .val { font-size: 18px; font-weight: 700; color: #1e2124; }
+.modal--energy .detail-row .val .u { font-size: 14px; font-weight: 500; color: #6d7882; margin-left: 4px; }
+.modal--energy .foot-link { font-size: 14px; color: #464c53; }
+.modal--energy .foot-btn { font-size: 14px; font-weight: 400; }
+
 .m-subtitle {
   margin-top: 4px;
   font-size: 13px;
@@ -3201,18 +3245,91 @@ button {
   padding-top: 10px;
 }
 
+/* ===== 모빌리티 마일: 에너지 마일과 스타일 통일 (내용 유지 · 초록 테마 유지) ===== */
+/* 헤더 — 제목 24·아이콘 48·세로 가운데·ⓘ↔슬라이더 정렬 */
+.modal--mobility .m-header { align-items: center; gap: 10px; padding: 0 20px; min-height: 97px; }
+.modal--mobility .m-logo, .modal--mobility .m-logo img { width: 48px; height: 48px; }
+.modal--mobility .m-title { font-size: 24px; letter-spacing: -0.5px; }
+.modal--mobility .m-subtitle { margin-top: 2px; font-size: 14px; color: #464c53; letter-spacing: -0.2px; }
+.modal--mobility .m-info-btn { align-self: center; margin-top: 0; }
+.modal--mobility .m-controls { padding-top: 0; }
+/* 슬라이드 패딩 (상16/좌우20/하20) */
+.modal[data-color="green"] .m-slide { padding: 16px 20px 20px; }
+/* 섹션 제목 16 */
+.modal[data-color="green"] .m-slide .sect-title { font-size: 16px; font-weight: 600; color: #131416; margin: 0 0 8px; }
+/* 통계 박스 — 라벨14/값20 */
+.modal[data-color="green"] .stat-label { font-size: 14px; font-weight: 600; color: #464c53; }
+.modal[data-color="green"] .stat-value { font-size: 20px; color: var(--c); }
+.modal[data-color="green"] .stat-value .unit { font-size: 12px; color: #8a949e; }
+.modal[data-color="green"] .stat-foot { color: #6d7882; }
+/* 서비스/DRT 박스 */
+.modal[data-color="green"] .svc-head .svc-name { font-size: 15px; color: #131416; }
+.modal[data-color="green"] .svc-cell .l { font-size: 13px; color: #6d7882; }
+.modal[data-color="green"] .svc-cell .v { font-size: 16px; color: var(--c); }
+.modal[data-color="green"] .svc-cell .v .u { font-size: 12px; color: #8a949e; }
+.modal[data-color="green"] .drt-box .drt-title { font-size: 15px; color: #131416; }
+/* 상세(슬라이드2) — 행50·아이콘24, footer 하단 고정·라인 제거 */
+.modal[data-color="green"] .m-slide[data-slide="2"] { display: flex; flex-direction: column; }
+.modal[data-color="green"] .m-slide[data-slide="2"] .detail-list { gap: 6px; }
+.modal[data-color="green"] .m-slide[data-slide="2"] .detail-row { height: 50px; padding: 0 2px; border-bottom: 1px solid #e6e8ea; }
+.modal[data-color="green"] .m-slide[data-slide="2"] .detail-row .ic-sm,
+.modal[data-color="green"] .m-slide[data-slide="2"] .detail-row .ic-sm img { width: 24px; height: 24px; }
+.modal[data-color="green"] .m-slide[data-slide="2"] .detail-row .lbl { font-size: 14px; font-weight: 500; color: #1e2124; }
+.modal[data-color="green"] .m-slide[data-slide="2"] .detail-row .val { font-size: 18px; font-weight: 700; color: #1e2124; }
+.modal[data-color="green"] .m-slide[data-slide="2"] .detail-row .val .u { font-size: 14px; font-weight: 500; color: #6d7882; margin-left: 4px; }
+.modal[data-color="green"] .m-slide[data-slide="2"] .detail-foot { margin-top: auto; border-top: none; padding-top: 0; }
+.modal[data-color="green"] .foot-link { font-size: 14px; color: #464c53; }
+.modal[data-color="green"] .foot-btn { font-size: 14px; font-weight: 400; }
+/* 슬라이드 0(밀도 높음) — 통일된 폰트 유지하되 간격만 압축해 카드 안에 맞춤 */
+.modal[data-color="green"] .m-slide[data-slide="0"] .stat-card { min-height: 0; padding: 9px 12px; }
+.modal[data-color="green"] .m-slide[data-slide="0"] .sect-title { margin: 2px 0 6px; }
+.modal[data-color="green"] .m-slide[data-slide="0"] .svc-box { padding: 14px; margin-top: 6px; }
+.modal[data-color="green"] .m-slide[data-slide="0"] .svc-grid { gap: 12px 14px; }
+.modal[data-color="green"] .m-slide[data-slide="0"] .svc-cell { gap: 3px; }
+.modal[data-color="green"] .m-slide[data-slide="0"] .svc-cell .v { font-size: 16px; }
+/* 섹션 타이틀: margin-top 제거, margin-bottom 12px (요청) */
+.modal--mobility .m-slide .sect-title { margin-top: 0 !important; margin-bottom: 12px !important; }
+/* 슬라이드0 "친환경 배달문화 밸류체인" 타이틀만 margin-top 8px */
+.modal--mobility .m-slide[data-slide="0"] .sect-title { margin-top: 8px !important; }
+
+/* ===== 세이프티 마일: 에너지 마일과 스타일 통일 (내용 유지 · 주황 테마 유지) ===== */
+/* 헤더 — 제목 24·아이콘 48·세로 가운데·ⓘ↔슬라이더 정렬 */
+.modal--safety .m-header { align-items: center; gap: 10px; padding: 0 20px; min-height: 97px; }
+.modal--safety .m-logo, .modal--safety .m-logo img { width: 48px; height: 48px; }
+.modal--safety .m-title { font-size: 24px; letter-spacing: -0.5px; }
+.modal--safety .m-subtitle { margin-top: 2px; font-size: 14px; color: #464c53; letter-spacing: -0.2px; }
+.modal--safety .m-info-btn { align-self: center; margin-top: 0; }
+.modal--safety .m-controls { padding-top: 0; }
+/* 섹션 제목 색 통일(#131416); 슬라이드1은 16px */
+.modal[data-color="orange"] .m-slide .sect-title { color: #131416; }
+.modal[data-color="orange"] .m-slide[data-slide="1"] .sect-title { font-size: 16px; font-weight: 600; }
+/* 상세행(슬라이드1) — 차트가 있어 높이는 압축(고정50 불가), 폰트/색만 통일 */
+.modal[data-color="orange"] .m-slide[data-slide="1"] .detail-row { padding: 5px 2px; border-bottom: 1px solid #e6e8ea; }
+.modal[data-color="orange"] .m-slide[data-slide="1"] .detail-list { margin-top: 2px; }
+.modal[data-color="orange"] .m-slide[data-slide="1"] .sect-title[style] { margin-top: 6px !important; }
+.modal[data-color="orange"] .m-slide[data-slide="1"] .detail-row .ic-sm,
+.modal[data-color="orange"] .m-slide[data-slide="1"] .detail-row .ic-sm svg { width: 24px; height: 24px; }
+.modal[data-color="orange"] .m-slide[data-slide="1"] .detail-row .lbl { font-size: 13px; font-weight: 500; color: #1e2124; }
+.modal[data-color="orange"] .m-slide[data-slide="1"] .detail-row .val { font-size: 13px; font-weight: 700; color: #1e2124; }
+.modal[data-color="orange"] .m-slide[data-slide="1"] .detail-row .val .u { font-size: 13px; }
+/* 슬라이드0(매우 밀도 높음): 헤더가 커진 만큼 더 압축해 카드 안에 맞춤 */
+.modal[data-color="orange"] .m-slide[data-slide="0"] { padding: 10px 20px 10px; }
+.modal[data-color="orange"] .m-slide[data-slide="0"] .sect-title { margin: 4px 0; font-size: 16px; font-weight: 600; }
+
 /* ==================== SAFETY SLIDE 1 — compact ==================== */
 .modal[data-color="orange"] .m-slide[data-slide="1"] {
   padding: 12px 20px 12px;
 }
 
 .modal[data-color="orange"] .m-slide[data-slide="1"] .sect-row {
-  margin: 4px 0 4px;
+  margin: 0 !important;
 }
 
 .modal[data-color="orange"] .m-slide[data-slide="1"] .sect-title {
-  margin: 8px 0 4px;
-  font-size: 12.5px;
+  margin: 4px 0 3px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #131416;
 }
 
 .modal[data-color="orange"] .m-slide[data-slide="1"] .line-chart {
@@ -3231,7 +3348,7 @@ button {
 
 .modal[data-color="orange"] .m-slide[data-slide="1"] .detail-row {
   border-bottom-color: #ECEEF2;
-  padding: 6px 2px;
+  padding: 4px 2px;
 }
 
 .modal[data-color="purple"] .line-chart,

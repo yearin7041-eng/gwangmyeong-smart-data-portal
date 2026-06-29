@@ -276,6 +276,10 @@ button {
 .bus-route-ovl.is-bss .bus-route-line { display: none; }
 /* 정류장/공유거점 핀 hover 가능(카드 표시 트리거) */
 .bus-route-ovl .route-pins > g { pointer-events: auto; cursor: pointer; }
+/* 핀 hover 시 라벨 칩 테두리를 각 핀 primary 컬러로(버스=녹색, BSS=파랑) — 2px, ease-out 0.2s */
+.bus-route-ovl .route-pins > g > path:first-of-type { transition: stroke 0.2s ease-out, stroke-width 0.2s ease-out; }
+.bus-route-ovl .route-pins--bus > g:hover > path:first-of-type { stroke: #06A85B; stroke-width: 2; }
+.bus-route-ovl .route-pins--bss > g:hover > path:first-of-type { stroke: #0c8ae5; stroke-width: 2; }
 .bus-route-line {
   animation: busRouteDash 1s linear infinite;   /* 점선이 진행 방향으로 흐름 */
 }
@@ -522,6 +526,9 @@ button {
 
 /* 공유거점 핀별 카드 컨테이너 + 약간 컴팩트한 핀용 카드 */
 .bss-cards { position: fixed; inset: 0; z-index: 9100; pointer-events: none; }
+/* hover 카드 영역 전체 마우스포인터 일괄 적용(버스 DRT 카드 + BSS 카드) */
+.bss-cards .bss-card--pin, .bss-cards .bss-card--pin *,
+.bss-cards .bus-modal--pin, .bss-cards .bus-modal--pin * { cursor: pointer; }
 .bss-cards .bss-card--pin { pointer-events: auto; width: 176px; padding: 9px 14px; gap: 6px; }
 .bss-card--pin .bss-card__body { gap: 12px; }
 .bss-card--pin .bss-card__head { height: 28px; }

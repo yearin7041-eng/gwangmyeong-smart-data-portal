@@ -167,7 +167,7 @@ export default function AdminContent({ onShowToast, onTabChange }: AdminContentP
       {/* Filter row */}
       <div className="flex items-center gap-[16px] flex-wrap">
         <div className="gp-searchfield" style={{ flex: '0 0 350px', width: '350px' }}>
-          <input type="text" placeholder="제목, 내용, 작성자 검색" value={search} onChange={e => setSearch(e.target.value)} />
+          <input type="text" placeholder="제목,내용 검색" value={search} onChange={e => setSearch(e.target.value)} />
           <Search className="gp-ico" size={20} />
         </div>
         <div className="flex items-center gap-[24px] ml-auto flex-wrap">

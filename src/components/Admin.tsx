@@ -67,7 +67,7 @@ export default function Admin({ onShowToast, onNavigate }: AdminProps) {
         </a>
         <div className="flex items-center gap-[36px]">
           <button
-            onClick={() => onNavigate?.('intro')}
+            onClick={() => onNavigate?.('home')}
             className="h-[48px] w-[170px] rounded-[6px] border border-[#CDD1D5] bg-white flex items-center justify-center gap-[6px] text-[16px] font-medium text-[#131416] hover:border-[var(--gp-primary)] hover:text-[var(--gp-primary)] transition-colors"
           >
             사용자 화면 보기 <ExternalLink size={16} />

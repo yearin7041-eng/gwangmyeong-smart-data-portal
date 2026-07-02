@@ -7,6 +7,7 @@
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.min.css" />
     <link rel="stylesheet" href="./css/style.css?v=37" />
     <link rel="stylesheet" href="./css/gm2.css?v=2" />
+    <link rel="stylesheet" href="./css/mapGuide.css?v=8" />
   </head>
   <body>
     <div class="home-page">
@@ -23,7 +24,7 @@
           <a href="#carbon-city">강소형스마트도시 광명</a>
           <a href="#city-index">데이터 지도</a>
           <a href="#data">데이터목록</a>
-          <a href="#activity">개인탄소저감활동</a>
+          <a href="#activity">시민탄소저감활동</a>
           <a href="#platform">연관플랫폼</a>
           <a href="#citizen">공지사항</a>
           <a href="#guide">관리자</a>
@@ -73,10 +74,11 @@
           </div>
 
           <!-- Data Building Hitbox + Hover Image -->
-          <div class="bldg-zone" data-building="data" 
+          <div class="bldg-zone" data-building="data"
                style="position:absolute; z-index:5; cursor:pointer;
                       left:59.8%; top:calc(42.0% + 2px); width:17.8%; height:12.8%;">
           </div>
+
 
           <div class="hero-copy" data-component="hero-copy">
             <h1>
@@ -1247,10 +1249,17 @@
             }
             return vs;
           }
+          var stageEl = document.querySelector('.map-stage');
           (function tick() {
             // 모달 열림 중에는 cutout이 강조하므로 라이브 outline 해제
-            if (window.__busModalOpen || mx < 0) { if (outlined.length) setOutline([]); }
-            else { setOutline(vehiclesAt(mx, my)); }
+            if (window.__busModalOpen || mx < 0) {
+              if (outlined.length) setOutline([]);
+              if (stageEl) stageEl.style.cursor = '';
+            } else {
+              setOutline(vehiclesAt(mx, my));
+              // 클릭 가능한 마커(버스·바이크) 위에서는 포인터 커서 표시
+              if (stageEl) stageEl.style.cursor = busAt(mx, my) ? 'pointer' : '';
+            }
             window.requestAnimationFrame(tick);
           })();
         })();
@@ -1471,7 +1480,8 @@
       </div>
     </div>
 
-    <script src="./js/buildingInteraction.js?v=83"></script>
+    <script src="./js/buildingInteraction.js?v=84"></script>
+    <script src="./js/mapGuide.js?v=29"></script>
 
     <!-- 시정소식 슬라이더: 5개 소식 자동 슬라이드(3초) + 이전/다음/일시정지 -->
     <script>

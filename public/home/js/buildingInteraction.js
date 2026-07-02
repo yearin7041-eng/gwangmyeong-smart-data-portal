@@ -296,7 +296,7 @@
     var els = document.elementsFromPoint(x, y);
     for (var i = 0; i < els.length; i++) {
       var el = els[i];
-      if (el && el.closest && el.closest('.lt-bus, .lt-vehicle, .lt-pinhover')) return true;
+      if (el && el.closest && el.closest('.lt-bus, .lt-scooter, .lt-vehicle, .lt-pinhover')) return true;
     }
     return false;
   }

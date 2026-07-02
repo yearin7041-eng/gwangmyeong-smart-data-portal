@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Header from './components/Header';
 import IntroSection from './components/IntroSection';
 import SolutionMap from './components/SolutionMap';
@@ -15,7 +15,8 @@ import PersonalCarbon from './components/PersonalCarbon';
 import Notice from './components/Notice';
 import NoticeDetail from './components/NoticeDetail';
 import Admin from './components/Admin';
-import Login from './components/Login';
+import SplashModal from './components/SplashModal';
+// import Login from './components/Login'; // 로그인 임시 주석처리 (요청 시 복구)
 import Footer from './components/Footer';
 import RelatedPlatforms from './components/RelatedPlatforms';
 import { solutionsData } from './data';
@@ -28,6 +29,22 @@ export default function App() {
   const [activeSolutionId, setActiveSolutionId] = useState<string>("01"); // default active: "01" (신재생 에너지 자원 발전소)
   const [mileFilter, setMileFilter] = useState<string>("all");
   const [activeToast, setActiveToast] = useState<string | null>(null);
+
+  // 지도 온보딩 가이드: 스플래시 종료 + 홈 iframe 로드 후 1회 시작 신호 전송
+  const homeIframeRef = useRef<HTMLIFrameElement>(null);
+  const [homeReady, setHomeReady] = useState(false);
+  const [splashResolved, setSplashResolved] = useState(false);
+  const guideSentRef = useRef(false);
+
+  useEffect(() => {
+    if (currentPage === 'home' && homeReady && splashResolved && !guideSentRef.current) {
+      guideSentRef.current = true;
+      homeIframeRef.current?.contentWindow?.postMessage(
+        { type: 'gm-start-map-guide' },
+        window.location.origin
+      );
+    }
+  }, [currentPage, homeReady, splashResolved]);
 
   const selectedSolution = solutionsData.find(s => s.id === activeSolutionId) || solutionsData[0];
 
@@ -69,6 +86,9 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[var(--bg-page)] text-[var(--fg-2)] flex flex-col font-sans selection:bg-[var(--gp-primary-soft)] selection:text-[var(--gp-primary)] antialiased">
+      {/* 첫 진입 스플래시 모달 (ECOVIEW 안내) */}
+      <SplashModal onNavigate={setCurrentPage} onResolved={() => setSplashResolved(true)} />
+
       {/* Toast alert bubble */}
       {activeToast && (
         <div className="fixed bottom-6 right-6 z-[100] max-w-sm bg-slate-900 text-white p-4 rounded-xl border border-slate-800 shadow-xl flex items-start gap-3 animate-in fade-in slide-in-from-bottom-3 duration-200">
@@ -86,7 +106,9 @@ export default function App() {
         <>
           <Header currentPage={currentPage} onNavigate={setCurrentPage} />
           <iframe
-            src="/home/index.html?v=132"
+            ref={homeIframeRef}
+            onLoad={() => setHomeReady(true)}
+            src="/home/index.html?v=164"
             title="광명 스마트데이터포털"
             className="w-full border-0 block"
             style={{ height: 'calc(100vh - 80px)' }}
@@ -130,7 +152,7 @@ export default function App() {
                 <span className="leading-none text-[var(--fg-3)]">광명역세권 건물 에너지 사용량 데이터</span>
               </>
             ) : currentPage === 'personalCarbon' ? (
-              <span className="leading-none text-[var(--fg-3)]">개인탄소저감활동</span>
+              <span className="leading-none text-[var(--fg-3)]">시민탄소저감활동</span>
             ) : currentPage === 'relatedPlatforms' ? (
               <span className="leading-none text-[var(--fg-3)]">연관플랫폼</span>
             ) : currentPage === 'notice' ? (
@@ -304,9 +326,10 @@ export default function App() {
           <DataDetail onShowToast={triggerToast} onNavigate={setCurrentPage} />
         ) : currentPage === 'personalCarbon' ? (
           <PersonalCarbon />
-        ) : currentPage === 'login' ? (
+        ) : /* 로그인 페이지 임시 주석처리 (요청 시 복구)
+        currentPage === 'login' ? (
           <Login onShowToast={triggerToast} />
-        ) : currentPage === 'notice' ? (
+        ) : */ currentPage === 'notice' ? (
           <Notice onShowToast={triggerToast} onNavigate={setCurrentPage} />
         ) : currentPage === 'noticeDetail' ? (
           <NoticeDetail onShowToast={triggerToast} onNavigate={setCurrentPage} />

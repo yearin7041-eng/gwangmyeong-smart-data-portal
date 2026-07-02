@@ -36,7 +36,7 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
         </a>
 
         {/* Desktop GNB Navigation */}
-        <nav className="hidden lg:flex items-center gap-[50px] h-full">
+        <nav className="hidden lg:flex lg:flex-1 lg:justify-center items-center gap-[50px] h-full lg:ml-[80px]">
           {/* 강소형스마트도시 광명 (대메뉴 + 소메뉴) */}
           <div className="relative group flex items-center h-full cursor-pointer">
             <a 
@@ -161,7 +161,7 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
                 : 'text-[#0F0F10] hover:text-[var(--gp-primary)]'
             }`}
           >
-            개인탄소저감활동
+            시민탄소저감활동
           </a>
           <a 
             href="#partner-banner" 
@@ -207,7 +207,11 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
           </a>
         </nav>
 
+        {/* 로고 폭만큼 우측 스페이서 → GNB를 헤더 정중앙에 정렬 */}
+        <div className="hidden lg:block shrink-0 w-[215px]" aria-hidden="true" />
+
         {/* Right Utility Buttons */}
+        {/* 로그인 임시 주석처리 (요청 시 복구)
         <div className="hidden sm:flex items-center">
           <button
             onClick={() => onNavigate('login')}
@@ -217,6 +221,7 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
             <span>로그인</span>
           </button>
         </div>
+        */}
 
         {/* Mobile menu toggle button */}
         <div className="flex lg:hidden items-center gap-4">
@@ -234,6 +239,7 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
       {mobileMenuOpen && (
         <div className="lg:hidden absolute top-full left-0 w-full bg-white border-b border-[var(--border-2)] shadow-xl animate-in fade-in slide-in-from-top-4 duration-200">
           <div className="p-5 flex flex-col gap-4">
+            {/* 로그인 임시 주석처리 (요청 시 복구)
             <div className="p-3 border-b border-[var(--border-1)] flex justify-between items-center">
               <button
                 onClick={() => { setMobileMenuOpen(false); onNavigate('login'); }}
@@ -243,6 +249,7 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
                 <span>로그인</span>
               </button>
             </div>
+            */}
 
             <nav className="flex flex-col gap-2">
               {/* 강소형스마트도시 광명 */}
@@ -343,7 +350,7 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
                   currentPage === 'personalCarbon' ? 'text-[var(--gp-primary)] bg-[var(--gp-primary-soft)]' : 'text-[#0F0F10]'
                 }`}
               >
-                <span>개인탄소저감활동</span>
+                <span>시민탄소저감활동</span>
                 <ArrowRight size={14} />
               </a>
               <a 

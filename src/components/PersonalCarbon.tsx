@@ -28,7 +28,7 @@ export default function PersonalCarbon() {
         }}
       >
         <div className="max-w-[1440px] mx-auto w-full px-0 relative z-10 flex flex-col gap-[8px]">
-          <h1 className="text-[40px] font-bold text-[#16243B] font-score">개인탄소저감활동</h1>
+          <h1 className="text-[40px] font-bold text-[#16243B] font-score">시민탄소저감활동</h1>
           <p className="text-[16px] text-[#5A6878] leading-relaxed font-score">
             광명시민의 탄소저감 실천 현황을 데이터로 확인하고,<br/>생활 속 탄소중립 활동에 참여해 보세요.
           </p>
